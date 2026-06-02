@@ -168,11 +168,12 @@ async function printStartup() {
       return resolve();
     }
 
-    device.open(async (err) => {
-      if (err) {
-        console.warn('[startup] Printer open error:', err.message);
-        return resolve();
-      }
+    try {
+      device.open(async (err) => {
+        if (err) {
+          console.warn('[startup] Printer open error:', err.message);
+          return resolve();
+        }
 
       try {
         const printer = new Printer(device);
@@ -205,6 +206,10 @@ async function printStartup() {
         resolve();
       }
     });
+    } catch (e) {
+      console.warn('[startup] Erreur ouverture USB:', e.message);
+      resolve();
+    }
   });
 }
 
