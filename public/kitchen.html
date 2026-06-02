@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIZZIA — Cuisine</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <span class="logo">PIZZIA</span>
+    <div class="nav-links">
+      <a href="/" class="btn btn-sm">Commandes</a>
+      <a href="/logout" class="btn btn-sm btn-ghost">Déconnexion</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <div class="kitchen-header">
+      <h2 class="page-title">Cuisine</h2>
+      <span id="order-count" class="order-count"></span>
+    </div>
+    <div id="orders-grid" class="orders-grid">
+      <p class="empty-msg">Aucune commande pour le moment...</p>
+    </div>
+  </main>
+
+  <script>
+    // Check auth
+    (async () => {
+      const res = await fetch('/orders');
+      if (res.status === 401) window.location.href = '/pin.html';
+    })();
+
+    let orders = [];
+
+    function getElapsed(timestamp) {
+      const then = new Date(timestamp).getTime();
+      const now = Date.now();
+      return Math.floor((now - then) / 60000); // minutes
+    }
+
+    function getAgeClass(minutes) {
+      if (minutes >= 20) return 'age-red';
+      if (minutes >= 10) return 'age-orange';
+      return 'age-neutral';
+    }
+
+    function formatTime(timestamp) {
+      return timestamp.replace('T', ' ').slice(0, 16);
+    }
+
+    function renderOrders() {
+      const grid = document.getElementById('orders-grid');
+      const countEl = document.getElementById('order-count');
+
+      if (orders.length === 0) {
+        grid.innerHTML = '<p class="empty-msg">Aucune commande pour le moment...</p>';
+        countEl.textContent = '';
+        return;
+      }
+
+      const sorted = [...orders].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
+      countEl.textContent = `${sorted.length} commande${sorted.length > 1 ? 's' : ''}`;
+
+      grid.innerHTML = sorted.map(order => {
+        const minutes = getElapsed(order.timestamp);
+        const ageClass = getAgeClass(minutes);
+        const buzzerHtml = order.buzzer
+          ? `<div class="order-buzzer">Bipeur <strong>${order.buzzer}</strong></div>`
+          : '';
+        const commentHtml = order.comment
+          ? `<div class="order-comment">Note : ${order.comment}</div>`
+          : '';
+
+        return `
+          <div class="order-card ${ageClass}">
+            <div class="card-header">
+              <span class="order-num">#${order.id}</span>
+              <span class="order-time">${formatTime(order.timestamp)}</span>
+              <span class="order-elapsed">${minutes} min</span>
+            </div>
+            <div class="order-client">${order.client}</div>
+            ${buzzerHtml}
+            <ul class="pizza-list">
+              ${order.pizzas.map(p => `<li>${p}</li>`).join('')}
+            </ul>
+            ${commentHtml}
+            <button class="btn btn-sm btn-reprint" onclick="reprint(${order.id})">Reimprimer</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    window.reprint = async (id) => {
+      try {
+        const res = await fetch(`/print/${id}`, { method: 'POST' });
+        if (!res.ok) {
+          const err = await res.json();
+          alert('Erreur impression: ' + err.error);
+        }
+      } catch {
+        alert('Erreur réseau');
+      }
+    };
+
+    // SSE connection
+    const evtSource = new EventSource('/events');
+    evtSource.onmessage = (e) => {
+      orders = JSON.parse(e.data);
+      renderOrders();
+    };
+    evtSource.onerror = () => {
+      console.warn('SSE connection error, will retry...');
+    };
+
+    // Refresh card colors every minute
+    setInterval(renderOrders, 60000);
+  </script>
+</body>
+</html>

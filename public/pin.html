@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIZZIA — Connexion</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="pin-page">
+  <div class="pin-container">
+    <h1 class="logo">PIZZIA</h1>
+    <p class="pin-subtitle">Entrez votre code PIN</p>
+    <form id="pin-form">
+      <div class="pin-inputs">
+        <input type="password" inputmode="numeric" maxlength="1" class="pin-digit" data-index="0" autocomplete="off">
+        <input type="password" inputmode="numeric" maxlength="1" class="pin-digit" data-index="1" autocomplete="off">
+        <input type="password" inputmode="numeric" maxlength="1" class="pin-digit" data-index="2" autocomplete="off">
+        <input type="password" inputmode="numeric" maxlength="1" class="pin-digit" data-index="3" autocomplete="off">
+      </div>
+      <div id="pin-error" class="error-msg" style="display:none">PIN incorrect</div>
+      <button type="submit" class="btn btn-primary">Valider</button>
+    </form>
+  </div>
+
+  <script>
+    const digits = document.querySelectorAll('.pin-digit');
+    const form = document.getElementById('pin-form');
+    const errorEl = document.getElementById('pin-error');
+
+    digits.forEach((input, i) => {
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/[^0-9]/g, '');
+        if (input.value && i < digits.length - 1) {
+          digits[i + 1].focus();
+        }
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && i > 0) {
+          digits[i - 1].focus();
+        }
+      });
+    });
+
+    digits[0].focus();
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pin = Array.from(digits).map(d => d.value).join('');
+      if (pin.length < 4) return;
+
+      errorEl.style.display = 'none';
+
+      try {
+        const res = await fetch('/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin })
+        });
+
+        if (res.ok) {
+          window.location.href = '/';
+        } else {
+          errorEl.style.display = 'block';
+          digits.forEach(d => d.value = '');
+          digits[0].focus();
+        }
+      } catch {
+        errorEl.textContent = 'Erreur réseau';
+        errorEl.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+{
+  "pin": "$2b$10$hugnuqEyn92QF4vcg5Q8vuqhbD.glNd2acWkf6Srxkqjcw2Z.UASK",
+  "port": 3000,
+  "pizzas": ["Margherita", "Reine", "4 Fromages", "Napolitaine", "Végétarienne", "Calzone"]
+}

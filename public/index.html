@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIZZIA — Nouvelle commande</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <span class="logo">PIZZIA</span>
+    <div class="nav-links">
+      <a href="/kitchen.html" class="btn btn-sm">Cuisine</a>
+      <a href="/logout" class="btn btn-sm btn-ghost">Déconnexion</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <h2 class="page-title">Nouvelle commande</h2>
+
+    <div id="success-banner" class="success-banner" style="display:none"></div>
+
+    <form id="order-form" class="order-form">
+      <div class="form-group">
+        <label for="client">Nom du client <span class="required">*</span></label>
+        <input type="text" id="client" name="client" placeholder="Ex: Martin" required autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label for="buzzer">Numéro de bipeur</label>
+        <input type="number" id="buzzer" name="buzzer" min="1" max="30" placeholder="1-30">
+        <div id="buzzer-suggestions" class="suggestions"></div>
+      </div>
+
+      <div class="form-group">
+        <label>Pizzas <span class="required">*</span></label>
+        <div id="pizza-list" class="pizza-grid"></div>
+        <div id="pizza-error" class="error-msg" style="display:none">Sélectionnez au moins une pizza</div>
+      </div>
+
+      <div class="form-group">
+        <label for="comment">Commentaire</label>
+        <textarea id="comment" name="comment" rows="2" placeholder="Ex: sans oignon sur la Reine"></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-full">Envoyer la commande</button>
+    </form>
+  </main>
+
+  <script>
+    // Check auth
+    (async () => {
+      const res = await fetch('/orders');
+      if (res.status === 401) window.location.href = '/pin.html';
+    })();
+
+    const PIZZAS = [];
+    let activeOrders = [];
+
+    async function loadConfig() {
+      // We'll derive pizza list from a config endpoint or embed it
+      // Fetch orders to get active buzzers
+      const res = await fetch('/orders');
+      if (!res.ok) return;
+      activeOrders = await res.json();
+      renderBuzzerSuggestions();
+    }
+
+    async function loadPizzas() {
+      // Fetch pizza list from server
+      const res = await fetch('/config-pizzas');
+      if (res.ok) {
+        const data = await res.json();
+        PIZZAS.push(...data);
+      }
+      renderPizzas();
+    }
+
+    function renderPizzas() {
+      const grid = document.getElementById('pizza-list');
+      grid.innerHTML = '';
+      PIZZAS.forEach(pizza => {
+        const label = document.createElement('label');
+        label.className = 'pizza-option';
+        label.innerHTML = `<input type="checkbox" name="pizzas" value="${pizza}"><span>${pizza}</span>`;
+        grid.appendChild(label);
+      });
+    }
+
+    function renderBuzzerSuggestions() {
+      const usedBuzzers = new Set(activeOrders.map(o => o.buzzer).filter(Boolean));
+      const free = [];
+      for (let i = 1; i <= 30 && free.length < 6; i++) {
+        if (!usedBuzzers.has(i)) free.push(i);
+      }
+      const el = document.getElementById('buzzer-suggestions');
+      if (free.length === 0) {
+        el.innerHTML = '';
+        return;
+      }
+      el.innerHTML = 'Libres : ' + free.map(n =>
+        `<button type="button" class="suggestion-chip" onclick="setBuzzer(${n})">${n}</button>`
+      ).join('');
+    }
+
+    window.setBuzzer = (n) => {
+      document.getElementById('buzzer').value = n;
+    };
+
+    const form = document.getElementById('order-form');
+    const successBanner = document.getElementById('success-banner');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const pizzaError = document.getElementById('pizza-error');
+      pizzaError.style.display = 'none';
+
+      const client = document.getElementById('client').value.trim();
+      const buzzer = document.getElementById('buzzer').value;
+      const comment = document.getElementById('comment').value.trim();
+      const pizzas = Array.from(form.querySelectorAll('input[name="pizzas"]:checked')).map(c => c.value);
+
+      if (!client) return;
+      if (pizzas.length === 0) {
+        pizzaError.style.display = 'block';
+        return;
+      }
+
+      const body = { client, pizzas, comment };
+      if (buzzer) body.buzzer = Number(buzzer);
+
+      try {
+        const res = await fetch('/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+
+        if (res.ok) {
+          const order = await res.json();
+          successBanner.textContent = `Commande #${order.id} pour ${order.client} envoyée !`;
+          successBanner.style.display = 'block';
+          form.reset();
+          setTimeout(() => { successBanner.style.display = 'none'; }, 4000);
+          await loadConfig();
+        } else {
+          const err = await res.json();
+          alert('Erreur: ' + err.error);
+        }
+      } catch {
+        alert('Erreur réseau');
+      }
+    });
+
+    loadPizzas();
+    loadConfig();
+  </script>
+</body>
+</html>
