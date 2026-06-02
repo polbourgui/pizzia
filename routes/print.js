@@ -104,18 +104,7 @@ async function printOrder(order) {
 
         printer.text(SEP);
 
-        // ── Bipeur en très grand (GS ! ×3) ────────────
-        if (order.buzzer) {
-          printer.align('ct');
-          printer.feed(1);
-          printer.raw(GS_3X);
-          printer.text(String(order.buzzer));
-          printer.raw(GS_RESET);
-          printer.feed(1);
-          printer.text(SEP);
-        }
-
-        // ── Pizzas (ESC ! ×2 hauteur + largeur) ───────
+        // ── Pizzas (ESC ! ×2 hauteur) ─────────────────
         printer.align('lt');
         printer.feed(1);
         for (const { name, qty } of grouped) {
