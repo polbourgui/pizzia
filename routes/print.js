@@ -87,36 +87,38 @@ function dashedBar(heightDots = 3) {
 // Imprime "client" à gauche (normal) et le numéro de bipeur à droite (×3)
 // sur la même zone via positionnement absolu ESC $
 function printClientBuzzer(printer, client, buzzer) {
+  const GS_2X = Buffer.from([0x1D, 0x21, 0x11]); // ×2 hauteur + ×2 largeur
+
   if (!buzzer) {
-    // Pas de bipeur : juste le client en ×2 hauteur
-    printer.raw(ESC_DBL_HEIGHT);
+    // Pas de bipeur : client en ×2
+    printer.raw(ESC_DBL);
     printer.text(client || '');
     printer.raw(ESC_RESET);
     return;
   }
 
   const buzzerStr = String(buzzer);
-  // Largeur de buzzerStr en dots à taille ×3 : chaque char = 12*3 = 36 dots
-  const buzzerDots = buzzerStr.length * DOTS_PER_CHAR * 3;
+  // Largeur de buzzerStr en dots à taille ×2 : chaque char = 12*2 = 24 dots
+  const buzzerDots = buzzerStr.length * DOTS_PER_CHAR * 2;
   const buzzerPos  = 576 - buzzerDots; // position absolue en dots
 
-  // Client : normal, aligné à gauche
+  // Client en ×2 hauteur + largeur, aligné à gauche
   if (client) {
-    printer.raw(ESC_DBL_HEIGHT);
+    printer.raw(ESC_DBL);
     printer.pureText(client);
     printer.raw(ESC_RESET);
   }
 
-  // Positionnement absolu vers la droite, puis bipeur en ×3
+  // Positionnement absolu vers la droite, bipeur en ×2
   printer.raw(Buffer.from([
-    0x1B, 0x24,                          // ESC $
+    0x1B, 0x24,
     buzzerPos & 0xFF, (buzzerPos >> 8) & 0xFF
   ]));
-  printer.raw(GS_3X);
+  printer.raw(GS_2X);
   printer.pureText(buzzerStr);
   printer.raw(GS_RESET);
 
-  // Saut de ligne pour terminer la zone (la hauteur ×3 occupe 3 lignes)
+  // Saut de ligne (hauteur ×2 occupe 2 lignes)
   printer.raw(Buffer.from([0x0A]));
 }
 
@@ -146,11 +148,9 @@ async function printOrder(order) {
         const heure = formatTime(order.timestamp);
         const grouped = groupPizzas(order.pizzas);
 
-        // ── En-tête : #id à gauche, heure à droite (×2) ──
+        // ── En-tête : #id à gauche, heure à droite (normal) ──
         printer.align('lt');
-        printer.raw(ESC_DBL);
-        printer.text(twoCol(`#${order.id}`, heure, 24));
-        printer.raw(ESC_RESET);
+        printer.text(twoCol(`#${order.id}`, heure));
         printer.raw(solidBar(5));
 
         // ── Client (gauche) + bipeur (droite, ×3) ─────────
