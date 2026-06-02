@@ -87,38 +87,36 @@ function dashedBar(heightDots = 3) {
 // Imprime "client" à gauche (normal) et le numéro de bipeur à droite (×3)
 // sur la même zone via positionnement absolu ESC $
 function printClientBuzzer(printer, client, buzzer) {
-  const GS_2X = Buffer.from([0x1D, 0x21, 0x11]); // ×2 hauteur + ×2 largeur
-
   if (!buzzer) {
-    // Pas de bipeur : client en ×2
-    printer.raw(ESC_DBL);
+    // Pas de bipeur : client seul en ×3
+    printer.raw(GS_3X);
     printer.text(client || '');
-    printer.raw(ESC_RESET);
+    printer.raw(GS_RESET);
     return;
   }
 
   const buzzerStr = String(buzzer);
-  // Largeur de buzzerStr en dots à taille ×2 : chaque char = 12*2 = 24 dots
-  const buzzerDots = buzzerStr.length * DOTS_PER_CHAR * 2;
-  const buzzerPos  = 576 - buzzerDots; // position absolue en dots
+  // Largeur de buzzerStr en dots à taille ×3 : chaque char = 12*3 = 36 dots
+  const buzzerDots = buzzerStr.length * DOTS_PER_CHAR * 3;
+  const buzzerPos  = 576 - buzzerDots;
 
-  // Client en ×2 hauteur + largeur, aligné à gauche
+  // Client en ×3, aligné à gauche
   if (client) {
-    printer.raw(ESC_DBL);
+    printer.raw(GS_3X);
     printer.pureText(client);
-    printer.raw(ESC_RESET);
+    printer.raw(GS_RESET);
   }
 
-  // Positionnement absolu vers la droite, bipeur en ×2
+  // Positionnement absolu vers la droite, bipeur en ×3
   printer.raw(Buffer.from([
     0x1B, 0x24,
     buzzerPos & 0xFF, (buzzerPos >> 8) & 0xFF
   ]));
-  printer.raw(GS_2X);
+  printer.raw(GS_3X);
   printer.pureText(buzzerStr);
   printer.raw(GS_RESET);
 
-  // Saut de ligne (hauteur ×2 occupe 2 lignes)
+  // Saut de ligne (hauteur ×3 occupe 3 lignes)
   printer.raw(Buffer.from([0x0A]));
 }
 
@@ -167,7 +165,7 @@ async function printOrder(order) {
         }
         printer.raw(ESC_RESET);
         printer.feed(1);
-        printer.raw(dashedBar(3));
+        printer.raw(solidBar(5));
 
         // ── Commentaire ────────────────────────────────────
         if (order.comment) {
@@ -175,7 +173,7 @@ async function printOrder(order) {
           printer.text(`Note : ${order.comment}`);
         }
 
-        printer.feed(3);
+        printer.feed(4);
         printer.cut();
 
         await new Promise((res, rej) => printer.close((e) => e ? rej(e) : res()));
