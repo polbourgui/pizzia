@@ -31,11 +31,24 @@ function groupPizzas(pizzas) {
   return Array.from(map.entries()).map(([name, qty]) => ({ name, qty }));
 }
 
-// Crée un printer configuré pour les caractères latins (Epson TM-m30, CP858)
+const PRINTER_WIDTH = 48; // caractères par ligne à taille normale
+
+// Crée un printer avec le bon encodage pour les caractères latins/français.
+// setCharacterCodeTable() de la lib a un bug (envoie ESC+0x09 au lieu de ESC+t),
+// donc on envoie la commande ESC t manuellement via raw().
+// Code page 39 = ISO-8859-1 sur Epson TM-m30.
 function makePrinter(device) {
-  const p = new Printer(device, { encoding: 'CP858', width: 48 });
-  p.setCharacterCodeTable(16); // PC858 — Western European avec accents
+  const p = new Printer(device, { encoding: 'ISO-8859-1', width: PRINTER_WIDTH });
+  p.raw(Buffer.from([0x1B, 0x74, 39])); // ESC t 39 = ISO-8859-1
   return p;
+}
+
+// Aligne deux colonnes sur la largeur du ticket (taille normale = 48 chars)
+function twoCol(left, right, width = PRINTER_WIDTH) {
+  const l = String(left);
+  const r = String(right);
+  const gap = Math.max(1, width - l.length - r.length);
+  return l + ' '.repeat(gap) + r;
 }
 
 async function printOrder(order) {
@@ -66,38 +79,48 @@ async function printOrder(order) {
         const heure = formatTime(order.timestamp);
         const grouped = groupPizzas(order.pizzas);
 
-        // ── En-tête ──────────────────────────────
+        // ── En-tête : #id à gauche, heure à droite ───
         printer.align('lt');
         printer.size(1, 1);
-        printer.text(`#${order.id}`.padEnd(24) + heure);
+        printer.text(twoCol(`#${order.id}`, heure));
         printer.size(0, 0);
         printer.text(SEP);
 
-        // ── Bipeur (très grand si présent) ────────
+        // ── Client + bipeur sur la même ligne ─────────
+        // "Martin              BIPEUR : 12"
+        // Si seul l'un des deux est présent, il s'affiche seul
+        const clientStr = order.client || '';
+        const buzzerStr = order.buzzer ? `BIPEUR : ${order.buzzer}` : '';
+        if (clientStr || buzzerStr) {
+          printer.align('lt');
+          printer.text(twoCol(clientStr, buzzerStr));
+        }
+
+        printer.text(SEP);
+
+        // ── Bipeur en très grand (si présent) ─────────
         if (order.buzzer) {
           printer.align('ct');
           printer.feed(1);
-          printer.text('BIPEUR');
-          printer.size(2, 3);
+          printer.size(3, 3);
           printer.text(String(order.buzzer));
           printer.size(0, 0);
           printer.feed(1);
           printer.text(SEP);
         }
 
-        // ── Pizzas (double hauteur) ───────────────
+        // ── Pizzas (double hauteur) ────────────────────
         printer.align('lt');
         printer.feed(1);
         for (const { name, qty } of grouped) {
           printer.size(1, 2);
-          printer.text(`${qty}x ${name}`);
+          printer.text(`${qty}x  ${name}`);
         }
         printer.size(0, 0);
         printer.feed(1);
         printer.text(DASH);
 
-        // ── Client + note ─────────────────────────
-        if (order.client) printer.text(`${order.client}`);
+        // ── Commentaire ────────────────────────────────
         if (order.comment) printer.text(`Note : ${order.comment}`);
 
         printer.text(SEP);
