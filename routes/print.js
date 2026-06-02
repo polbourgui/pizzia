@@ -51,7 +51,7 @@ async function printOrder(order) {
       }
 
       try {
-        const printer = new Printer(device);
+        const printer = new Printer(device, { encoding: 'UTF-8' });
         const line32 = '================================';
         const line32dash = '--------------------------------';
 
@@ -168,7 +168,7 @@ async function printStartup() {
         }
 
       try {
-        const printer = new Printer(device);
+        const printer = new Printer(device, { encoding: 'UTF-8' });
         const line = '================================';
         const now = new Date().toLocaleString('fr-FR', { hour12: false });
 
