@@ -308,4 +308,43 @@ async function printStartup() {
   });
 }
 
-module.exports = { router, printOrder, printStartup };
+async function printNetworkError() {
+  if (!escposAvailable) return;
+
+  return new Promise((resolve) => {
+    let device;
+    try { device = new USB(); } catch { return resolve(); }
+
+    try {
+      device.open(async (err) => {
+        if (err) return resolve();
+        try {
+          const printer = makePrinter(device);
+          const now = new Date().toLocaleString('fr-FR', { hour12: false });
+          printer.align('ct');
+          printer.raw(solidBar(5));
+          printer.feed(1);
+          printer.raw(ESC_DBL);
+          printer.text('RESEAU PERDU');
+          printer.raw(ESC_RESET);
+          printer.feed(1);
+          printer.text(now);
+          printer.feed(1);
+          printer.raw(solidBar(5));
+          printer.feed(3);
+          printer.cut();
+          await new Promise((res, rej) => printer.close((e) => e ? rej(e) : res()));
+        } catch (e) {
+          console.warn('[network] Erreur impression:', e.message);
+          try { device.close(); } catch {}
+        }
+        resolve();
+      });
+    } catch (e) {
+      console.warn('[network] Erreur USB:', e.message);
+      resolve();
+    }
+  });
+}
+
+module.exports = { router, printOrder, printStartup, printNetworkError };

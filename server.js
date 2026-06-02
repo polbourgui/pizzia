@@ -8,7 +8,8 @@ const config = require('./config.json');
 
 const { router: authRouter } = require('./routes/auth');
 const ordersRouter = require('./routes/orders');
-const { router: printRouter, printStartup } = require('./routes/print');
+const os = require('os');
+const { router: printRouter, printStartup, printNetworkError } = require('./routes/print');
 
 const app = express();
 
@@ -70,9 +71,28 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Surveillance réseau : imprime un ticket d'erreur à la perte de connexion
+function hasNetwork() {
+  return Object.values(os.networkInterfaces())
+    .flat()
+    .some(i => !i.internal && i.family === 'IPv4');
+}
+
+let networkWasUp = hasNetwork();
+setInterval(() => {
+  const up = hasNetwork();
+  if (networkWasUp && !up) {
+    console.warn('[network] Connexion perdue — impression ticket erreur');
+    printNetworkError();
+  }
+  if (!networkWasUp && up) {
+    console.log('[network] Connexion rétablie');
+  }
+  networkWasUp = up;
+}, 15000);
+
 const port = config.port || 3000;
 app.listen(port, () => {
   console.log(`PIZZIA running on port ${port}`);
-  // Print startup ticket (non-blocking — errors are swallowed internally)
   printStartup();
 });

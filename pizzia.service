@@ -1,12 +1,14 @@
 [Unit]
 Description=PIZZIA Pizza Order System
-After=network.target
+After=network-online.target avahi-daemon.service
+Wants=network-online.target
 
 [Service]
-ExecStart=/usr/bin/node /home/pi/pizzia/server.js
-WorkingDirectory=/home/pi/pizzia
+ExecStart=/usr/bin/node /home/pol/pizzia-app/server.js
+WorkingDirectory=/home/pol/pizzia-app
 Restart=always
-User=pi
+RestartSec=5
+User=pol
 Environment=NODE_ENV=production
 
 [Install]
