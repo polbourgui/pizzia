@@ -3,6 +3,8 @@ const session = require('express-session');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const https = require('https');
+const http = require('http');
 const rateLimit = require('express-rate-limit');
 const config = require('./config.json');
 
@@ -40,6 +42,7 @@ app.use(session({
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
+    secure: fs.existsSync(path.join(__dirname, 'certs', 'cert.pem')),
     sameSite: 'strict',
     maxAge: 12 * 60 * 60 * 1000 // 12h
   }
@@ -91,8 +94,35 @@ setInterval(() => {
   networkWasUp = up;
 }, 15000);
 
-const port = config.port || 3000;
-app.listen(port, () => {
-  console.log(`PIZZIA running on port ${port}`);
-  printStartup();
-});
+const port      = config.port      || 3000;
+const httpPort  = config.httpPort  || 80;
+
+const certPath = path.join(__dirname, 'certs', 'cert.pem');
+const keyPath  = path.join(__dirname, 'certs', 'key.pem');
+
+if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+  // HTTPS
+  const credentials = {
+    cert: fs.readFileSync(certPath),
+    key:  fs.readFileSync(keyPath)
+  };
+  https.createServer(credentials, app).listen(port, () => {
+    console.log(`PIZZIA running on https://pizza.local:${port}`);
+    printStartup();
+  });
+
+  // Redirect HTTP → HTTPS
+  http.createServer((req, res) => {
+    res.writeHead(301, { Location: `https://${req.headers.host?.replace(/:\d+/, '')}:${port}${req.url}` });
+    res.end();
+  }).listen(httpPort, () => {
+    console.log(`HTTP redirect listening on port ${httpPort}`);
+  });
+} else {
+  // Fallback HTTP si pas de certificat
+  console.warn('Certificats introuvables dans certs/ — démarrage en HTTP');
+  app.listen(port, () => {
+    console.log(`PIZZIA running on http://pizza.local:${port}`);
+    printStartup();
+  });
+}
