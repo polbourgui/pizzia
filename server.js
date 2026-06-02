@@ -29,9 +29,7 @@ app.get('/logout', (req, res) => {
 app.get('/config-pizzas', (req, res) => {
   res.json(config.pizzas || []);
 });
-app.use('/events', ordersRouter);
-app.use('/orders', ordersRouter);
-app.use('/order', ordersRouter);
+app.use('/', ordersRouter);
 app.use('/print', printRouter);
 
 // Serve static files

@@ -41,32 +41,28 @@ function broadcastOrders(data) {
   }
 }
 
-// GET /events — SSE (no auth required)
-router.get('/', (req, res) => {
+// GET /events — SSE temps réel (pas d'auth)
+router.get('/events', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
 
-  // Send current orders immediately
   const data = loadOrders();
   res.write(`data: ${JSON.stringify(data.orders)}\n\n`);
 
   sseClients.add(res);
-
-  req.on('close', () => {
-    sseClients.delete(res);
-  });
+  req.on('close', () => sseClients.delete(res));
 });
 
-// GET /orders — return today's orders (auth required)
-router.get('/', requireAuth, (req, res) => {
+// GET /orders — commandes du jour (auth requise)
+router.get('/orders', requireAuth, (req, res) => {
   const data = loadOrders();
   res.json(data.orders);
 });
 
-// POST /order — create order (auth required)
-router.post('/', requireAuth, async (req, res) => {
+// POST /order — créer une commande (auth requise)
+router.post('/order', requireAuth, async (req, res) => {
   const { client, buzzer, pizzas, comment } = req.body;
 
   if (!client || !pizzas || !Array.isArray(pizzas) || pizzas.length === 0) {
@@ -91,7 +87,6 @@ router.post('/', requireAuth, async (req, res) => {
   saveOrders(data);
   broadcastOrders(data);
 
-  // Trigger print asynchronously (don't block response)
   printOrder(order).catch(() => {});
 
   res.status(201).json(order);
