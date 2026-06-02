@@ -55,40 +55,32 @@ async function printOrder(order) {
         const line32 = '================================';
         const line32dash = '--------------------------------';
 
-        await printer
-          .align('ct')
-          .text(line32)
-          .text(`PIZZIA          ${formatTimestamp(order.timestamp)}`)
-          .text(line32)
-          .size(1, 1) // double height for order number
-          .text(`COMMANDE #${order.id}`)
-          .size(0, 0)
-          .align('lt')
-          .text(`CLIENT : ${order.client}`);
+        printer.align('ct');
+        printer.text(line32);
+        printer.text(`PIZZIA          ${formatTimestamp(order.timestamp)}`);
+        printer.text(line32);
+        printer.size(1, 1);
+        printer.text(`COMMANDE #${order.id}`);
+        printer.size(0, 0);
+        printer.align('lt');
+        printer.text(`CLIENT : ${order.client}`);
 
         if (order.buzzer) {
-          await printer
-            .size(1, 1)
-            .text(`BIPEUR : ${order.buzzer}`)
-            .size(0, 0);
+          printer.size(1, 1);
+          printer.text(`BIPEUR : ${order.buzzer}`);
+          printer.size(0, 0);
         }
 
-        await printer.text(line32dash);
+        printer.text(line32dash);
+        for (const pizza of order.pizzas) printer.text(pizza);
+        printer.text(line32dash);
 
-        for (const pizza of order.pizzas) {
-          await printer.text(pizza);
-        }
+        if (order.comment) printer.text(`NOTE : ${order.comment}`);
 
-        await printer.text(line32dash);
+        printer.text(line32);
+        printer.cut();
 
-        if (order.comment) {
-          await printer.text(`NOTE : ${order.comment}`);
-        }
-
-        await printer
-          .text(line32)
-          .cut()
-          .close();
+        await new Promise((res, rej) => printer.close((e) => e ? rej(e) : res()));
 
         resolve();
       } catch (e) {
@@ -180,23 +172,30 @@ async function printStartup() {
         const line = '================================';
         const now = new Date().toLocaleString('fr-FR', { hour12: false });
 
+        printer.align('ct');
+
         // Print logo if file exists
         if (fs.existsSync(LOGO_PATH)) {
-          const img = await Image.load(LOGO_PATH);
-          await printer.align('ct').image(img, 'd24');
+          try {
+            const img = await Image.load(LOGO_PATH);
+            await printer.image(img, 'd24');
+          } catch (imgErr) {
+            console.warn('[startup] Image skipped:', imgErr.message);
+            printer.size(1, 1).text('PIZZIA').size(0, 0);
+          }
         } else {
-          await printer.align('ct').size(1, 1).text('PIZZIA').size(0, 0);
+          printer.size(1, 1).text('PIZZIA').size(0, 0);
         }
 
-        await printer
-          .align('ct')
-          .text(line)
-          .text(`Demarrage : ${now}`)
-          .text('Imprimante operationnelle')
-          .text(line)
-          .feed(2)
-          .cut()
-          .close();
+        printer.align('ct');
+        printer.text(line);
+        printer.text(`Demarrage : ${now}`);
+        printer.text('Imprimante operationnelle');
+        printer.text(line);
+        printer.feed(2);
+        printer.cut();
+
+        await new Promise((res, rej) => printer.close((e) => e ? rej(e) : res()));
 
         console.log('[startup] Ticket imprime avec succes');
         resolve();
