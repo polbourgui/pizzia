@@ -20,13 +20,22 @@ try {
   console.warn('node-escpos not available, printing disabled:', e.message);
 }
 
-function pad(str, len) {
-  return String(str).padEnd(len).slice(0, len);
+function formatTime(ts) {
+  return ts.slice(11, 16); // "HH:MM"
 }
 
-function formatTimestamp(ts) {
-  // ts like "2024-06-02T19:34:00"
-  return ts.replace('T', ' ').slice(0, 16);
+// Regroupe les doublons : ["A","A","B"] → [{name:"A",qty:2},{name:"B",qty:1}]
+function groupPizzas(pizzas) {
+  const map = new Map();
+  for (const p of pizzas) map.set(p, (map.get(p) || 0) + 1);
+  return Array.from(map.entries()).map(([name, qty]) => ({ name, qty }));
+}
+
+// Crée un printer configuré pour les caractères latins (Epson TM-m30, CP858)
+function makePrinter(device) {
+  const p = new Printer(device, { encoding: 'CP858', width: 48 });
+  p.setCharacterCodeTable(16); // PC858 — Western European avec accents
+  return p;
 }
 
 async function printOrder(order) {
@@ -51,33 +60,48 @@ async function printOrder(order) {
       }
 
       try {
-        const printer = new Printer(device, { encoding: 'UTF-8' });
-        const line32 = '================================';
-        const line32dash = '--------------------------------';
+        const printer = makePrinter(device);
+        const SEP  = '================================';
+        const DASH = '--------------------------------';
+        const heure = formatTime(order.timestamp);
+        const grouped = groupPizzas(order.pizzas);
 
-        printer.align('ct');
-        printer.text(line32);
-        printer.text(`PIZZIA          ${formatTimestamp(order.timestamp)}`);
-        printer.text(line32);
-        printer.size(1, 1);
-        printer.text(`COMMANDE #${order.id}`);
-        printer.size(0, 0);
+        // ── En-tête ──────────────────────────────
         printer.align('lt');
-        printer.text(`CLIENT : ${order.client}`);
+        printer.size(1, 1);
+        printer.text(`#${order.id}`.padEnd(24) + heure);
+        printer.size(0, 0);
+        printer.text(SEP);
 
+        // ── Bipeur (très grand si présent) ────────
         if (order.buzzer) {
-          printer.size(1, 1);
-          printer.text(`BIPEUR : ${order.buzzer}`);
+          printer.align('ct');
+          printer.feed(1);
+          printer.text('BIPEUR');
+          printer.size(2, 3);
+          printer.text(String(order.buzzer));
           printer.size(0, 0);
+          printer.feed(1);
+          printer.text(SEP);
         }
 
-        printer.text(line32dash);
-        for (const pizza of order.pizzas) printer.text(pizza);
-        printer.text(line32dash);
+        // ── Pizzas (double hauteur) ───────────────
+        printer.align('lt');
+        printer.feed(1);
+        for (const { name, qty } of grouped) {
+          printer.size(1, 2);
+          printer.text(`${qty}x ${name}`);
+        }
+        printer.size(0, 0);
+        printer.feed(1);
+        printer.text(DASH);
 
-        if (order.comment) printer.text(`NOTE : ${order.comment}`);
+        // ── Client + note ─────────────────────────
+        if (order.client) printer.text(`${order.client}`);
+        if (order.comment) printer.text(`Note : ${order.comment}`);
 
-        printer.text(line32);
+        printer.text(SEP);
+        printer.feed(2);
         printer.cut();
 
         await new Promise((res, rej) => printer.close((e) => e ? rej(e) : res()));
@@ -168,7 +192,7 @@ async function printStartup() {
         }
 
       try {
-        const printer = new Printer(device, { encoding: 'UTF-8' });
+        const printer = makePrinter(device);
         const line = '================================';
         const now = new Date().toLocaleString('fr-FR', { hour12: false });
 
