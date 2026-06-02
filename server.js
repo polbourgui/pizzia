@@ -23,9 +23,13 @@ app.use(session({
 
 // Routes
 app.use('/auth', authRouter);
-app.use('/logout', (req, res) => {
+app.get('/logout', (req, res) => {
   req.session.destroy(() => res.redirect('/pin.html'));
 });
+app.get('/config-pizzas', (req, res) => {
+  res.json(config.pizzas || []);
+});
+app.use('/events', ordersRouter);
 app.use('/orders', ordersRouter);
 app.use('/order', ordersRouter);
 app.use('/print', printRouter);

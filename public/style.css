@@ -1,0 +1,411 @@
+/* PIZZIA — Global Styles */
+
+:root {
+  --bg: #1a1a1a;
+  --bg2: #242424;
+  --bg3: #2e2e2e;
+  --border: #3a3a3a;
+  --text: #f0f0f0;
+  --text-muted: #999;
+  --primary: #e85d04;
+  --primary-hover: #f48c06;
+  --danger: #c1121f;
+  --success: #2d6a4f;
+  --success-text: #95d5b2;
+  --orange: #f4a261;
+  --red: #e63946;
+  --neutral-card: #2e2e2e;
+  --radius: 8px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ── Navbar ─────────────────────────────── */
+.navbar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1.5rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--primary);
+  letter-spacing: 2px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+/* ── Buttons ─────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s, opacity 0.15s;
+  color: var(--text);
+  background: var(--bg3);
+}
+
+.btn:hover { background: var(--border); }
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--primary-hover); }
+
+.btn-full { width: 100%; padding: 0.75rem; font-size: 1rem; }
+
+.btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
+
+.btn-ghost { background: transparent; border: 1px solid var(--border); }
+.btn-ghost:hover { background: var(--bg3); }
+
+.btn-reprint {
+  margin-top: 0.75rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  width: 100%;
+}
+.btn-reprint:hover { background: var(--bg3); }
+
+/* ── Container ───────────────────────────── */
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
+}
+
+.page-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
+  color: var(--text);
+}
+
+/* ── Forms ───────────────────────────────── */
+.order-form {
+  background: var(--bg2);
+  padding: 1.5rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group textarea {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 0.6rem 0.75rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--primary);
+}
+
+.form-group textarea { resize: vertical; }
+
+.required { color: var(--primary); }
+
+/* ── Pizza grid ──────────────────────────── */
+.pizza-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.pizza-option {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: border-color 0.15s, background 0.15s;
+  user-select: none;
+}
+
+.pizza-option:hover { border-color: var(--primary); }
+
+.pizza-option input[type="checkbox"] {
+  accent-color: var(--primary);
+  width: 16px;
+  height: 16px;
+}
+
+.pizza-option input:checked + span { color: var(--primary); font-weight: 600; }
+
+/* ── Buzzer suggestions ──────────────────── */
+.suggestions {
+  margin-top: 0.4rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  align-items: center;
+}
+
+.suggestion-chip {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 20px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.suggestion-chip:hover { border-color: var(--primary); color: var(--primary); }
+
+/* ── Messages ────────────────────────────── */
+.error-msg {
+  color: var(--red);
+  font-size: 0.85rem;
+  margin-top: 0.3rem;
+}
+
+.success-banner {
+  background: var(--success);
+  color: var(--success-text);
+  border-radius: var(--radius);
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* ── PIN page ────────────────────────────── */
+.pin-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+}
+
+.pin-container {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2.5rem 2rem;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+.pin-container .logo {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.pin-subtitle {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  font-size: 0.95rem;
+}
+
+.pin-inputs {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+}
+
+.pin-digit {
+  width: 56px;
+  height: 64px;
+  text-align: center;
+  font-size: 1.8rem;
+  background: var(--bg3);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.pin-digit:focus { border-color: var(--primary); }
+
+/* ── Kitchen dashboard ───────────────────── */
+.kitchen-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.order-count {
+  background: var(--primary);
+  color: #fff;
+  border-radius: 20px;
+  padding: 0.15rem 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+.empty-msg {
+  color: var(--text-muted);
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 0;
+}
+
+/* ── Order cards ─────────────────────────── */
+.order-card {
+  background: var(--neutral-card);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  box-shadow: var(--shadow);
+  transition: border-color 0.3s;
+}
+
+.order-card.age-orange { border-color: var(--orange); }
+.order-card.age-red    { border-color: var(--red); background: #2a1a1a; }
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.order-num {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--primary);
+}
+
+.order-time {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.order-elapsed {
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 12px;
+  background: var(--bg);
+}
+
+.age-orange .order-elapsed { color: var(--orange); }
+.age-red    .order-elapsed { color: var(--red); }
+
+.order-client {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.order-buzzer {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+
+.pizza-list {
+  list-style: none;
+  margin: 0.4rem 0;
+  padding: 0;
+}
+
+.pizza-list li {
+  font-size: 0.92rem;
+  padding: 0.2rem 0;
+  padding-left: 1rem;
+  position: relative;
+}
+.pizza-list li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+}
+
+.order-comment {
+  font-size: 0.82rem;
+  color: var(--orange);
+  font-style: italic;
+  margin-top: 0.4rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.4rem;
+}
+
+/* ── Responsive ──────────────────────────── */
+@media (max-width: 600px) {
+  .navbar { padding: 0.65rem 1rem; }
+  .container { padding: 1rem 0.75rem; }
+  .order-form { padding: 1rem; }
+  .pizza-grid { grid-template-columns: repeat(2, 1fr); }
+  .orders-grid { grid-template-columns: 1fr; }
+  .pin-digit { width: 48px; height: 56px; font-size: 1.5rem; }
+}
+
+@media (min-width: 900px) {
+  .container { max-width: 800px; }
+  .orders-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+}

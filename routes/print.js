@@ -13,7 +13,8 @@ try {
   const core = require('@node-escpos/core');
   const usbAdapter = require('@node-escpos/usb-adapter');
   Printer = core.Printer;
-  USB = usbAdapter.USB;
+  // The USB adapter exports as default in this version
+  USB = usbAdapter.default || usbAdapter.USB || usbAdapter;
   escposAvailable = true;
 } catch (e) {
   console.warn('node-escpos not available, printing disabled:', e.message);
@@ -50,7 +51,7 @@ async function printOrder(order) {
       }
 
       try {
-        const printer = await Printer.create(device);
+        const printer = new Printer(device);
         const line32 = '================================';
         const line32dash = '--------------------------------';
 

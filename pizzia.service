@@ -1,0 +1,13 @@
+[Unit]
+Description=PIZZIA Pizza Order System
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/node /home/pi/pizzia/server.js
+WorkingDirectory=/home/pi/pizzia
+Restart=always
+User=pi
+Environment=NODE_ENV=production
+
+[Install]
+WantedBy=multi-user.target

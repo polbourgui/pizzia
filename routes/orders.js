@@ -42,7 +42,7 @@ function broadcastOrders(data) {
 }
 
 // GET /events — SSE (no auth required)
-router.get('/events', (req, res) => {
+router.get('/', (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
