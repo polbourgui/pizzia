@@ -3,11 +3,13 @@ const fs = require('fs');
 const path = require('path');
 const { requireAuth } = require('./auth');
 const { printOrder } = require('./print');
+const config = require('../config.json');
 
 const router = express.Router();
 
 // SSE clients
 const sseClients = new Set();
+const MAX_SSE_CLIENTS = 20;
 
 function getTodayFile() {
   const date = new Date().toISOString().slice(0, 10);
@@ -41,8 +43,10 @@ function broadcastOrders(data) {
   }
 }
 
-// GET /events — SSE temps réel (pas d'auth)
-router.get('/events', (req, res) => {
+// GET /events — SSE temps réel (auth requise)
+router.get('/events', requireAuth, (req, res) => {
+  if (sseClients.size >= MAX_SSE_CLIENTS) return res.status(503).end();
+
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
@@ -71,6 +75,14 @@ router.post('/order', requireAuth, async (req, res) => {
   if (!pizzas || !Array.isArray(pizzas) || pizzas.length === 0) {
     return res.status(400).json({ error: 'Au moins une pizza requise' });
   }
+
+  // Input validation (Finding 8)
+  const MAX_CLIENT = 60, MAX_COMMENT = 300;
+  const allowed = new Set(config.pizzas);
+
+  if (client && String(client).length > MAX_CLIENT) return res.status(400).json({ error: 'Nom trop long' });
+  if (comment && String(comment).length > MAX_COMMENT) return res.status(400).json({ error: 'Commentaire trop long' });
+  if (!pizzas.every(p => allowed.has(p))) return res.status(400).json({ error: 'Pizza invalide' });
 
   const data = loadOrders();
   const nextId = data.orders.length > 0

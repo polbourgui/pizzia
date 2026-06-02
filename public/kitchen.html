@@ -50,6 +50,12 @@
       return timestamp.replace('T', ' ').slice(0, 16);
     }
 
+    function esc(s) {
+      return String(s ?? '')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
     function renderOrders() {
       const grid = document.getElementById('orders-grid');
       const countEl = document.getElementById('order-count');
@@ -67,26 +73,26 @@
         const minutes = getElapsed(order.timestamp);
         const ageClass = getAgeClass(minutes);
         const buzzerHtml = order.buzzer
-          ? `<div class="order-buzzer">Bipeur <strong>${order.buzzer}</strong></div>`
+          ? `<div class="order-buzzer">Bipeur <strong>${esc(order.buzzer)}</strong></div>`
           : '';
         const commentHtml = order.comment
-          ? `<div class="order-comment">Note : ${order.comment}</div>`
+          ? `<div class="order-comment">Note : ${esc(order.comment)}</div>`
           : '';
 
         return `
           <div class="order-card ${ageClass}">
             <div class="card-header">
-              <span class="order-num">#${order.id}</span>
+              <span class="order-num">#${esc(order.id)}</span>
               <span class="order-time">${formatTime(order.timestamp)}</span>
               <span class="order-elapsed">${minutes} min</span>
             </div>
-            <div class="order-client">${order.client}</div>
+            <div class="order-client">${esc(order.client)}</div>
             ${buzzerHtml}
             <ul class="pizza-list">
-              ${order.pizzas.map(p => `<li>${p}</li>`).join('')}
+              ${order.pizzas.map(p => `<li>${esc(p)}</li>`).join('')}
             </ul>
             ${commentHtml}
-            <button class="btn btn-sm btn-reprint" onclick="reprint(${order.id})">Reimprimer</button>
+            <button class="btn btn-sm btn-reprint" onclick="reprint(${esc(order.id)})">Reimprimer</button>
           </div>
         `;
       }).join('');
