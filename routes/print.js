@@ -51,6 +51,14 @@ function twoCol(left, right, width = PRINTER_WIDTH) {
   return l + ' '.repeat(gap) + r;
 }
 
+// size() de la lib utilise ESC ! qui ne supporte que ×2.
+// On envoie les commandes ESC/POS directement via raw().
+const ESC_RESET      = Buffer.from([0x1B, 0x21, 0x00]); // taille normale
+const ESC_DBL        = Buffer.from([0x1B, 0x21, 0x30]); // ×2 hauteur + ×2 largeur
+const ESC_DBL_HEIGHT = Buffer.from([0x1B, 0x21, 0x10]); // ×2 hauteur seule
+const GS_3X          = Buffer.from([0x1D, 0x21, 0x22]); // ×3 hauteur + ×3 largeur
+const GS_RESET       = Buffer.from([0x1D, 0x21, 0x00]); // reset GS !
+
 async function printOrder(order) {
   if (!escposAvailable) {
     console.log('Print skipped (no printer):', order);
@@ -81,14 +89,12 @@ async function printOrder(order) {
 
         // ── En-tête : #id à gauche, heure à droite ───
         printer.align('lt');
-        printer.size(1, 1);
-        printer.text(twoCol(`#${order.id}`, heure));
-        printer.size(0, 0);
+        printer.raw(ESC_DBL);
+        printer.text(twoCol(`#${order.id}`, heure, 24)); // ×2 largeur = 24 chars
+        printer.raw(ESC_RESET);
         printer.text(SEP);
 
         // ── Client + bipeur sur la même ligne ─────────
-        // "Martin              BIPEUR : 12"
-        // Si seul l'un des deux est présent, il s'affiche seul
         const clientStr = order.client || '';
         const buzzerStr = order.buzzer ? `BIPEUR : ${order.buzzer}` : '';
         if (clientStr || buzzerStr) {
@@ -98,25 +104,25 @@ async function printOrder(order) {
 
         printer.text(SEP);
 
-        // ── Bipeur en très grand (si présent) ─────────
+        // ── Bipeur en très grand (GS ! ×3) ────────────
         if (order.buzzer) {
           printer.align('ct');
           printer.feed(1);
-          printer.size(3, 3);
+          printer.raw(GS_3X);
           printer.text(String(order.buzzer));
-          printer.size(0, 0);
+          printer.raw(GS_RESET);
           printer.feed(1);
           printer.text(SEP);
         }
 
-        // ── Pizzas (double hauteur) ────────────────────
+        // ── Pizzas (ESC ! ×2 hauteur + largeur) ───────
         printer.align('lt');
         printer.feed(1);
         for (const { name, qty } of grouped) {
-          printer.size(1, 2);
+          printer.raw(ESC_DBL_HEIGHT);
           printer.text(`${qty}x  ${name}`);
         }
-        printer.size(0, 0);
+        printer.raw(ESC_RESET);
         printer.feed(1);
         printer.text(DASH);
 
