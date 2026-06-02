@@ -65,8 +65,11 @@ router.get('/orders', requireAuth, (req, res) => {
 router.post('/order', requireAuth, async (req, res) => {
   const { client, buzzer, pizzas, comment } = req.body;
 
-  if (!client || !pizzas || !Array.isArray(pizzas) || pizzas.length === 0) {
-    return res.status(400).json({ error: 'client and at least one pizza required' });
+  if (!client && !buzzer) {
+    return res.status(400).json({ error: 'Nom ou numéro de bipeur requis' });
+  }
+  if (!pizzas || !Array.isArray(pizzas) || pizzas.length === 0) {
+    return res.status(400).json({ error: 'Au moins une pizza requise' });
   }
 
   const data = loadOrders();
@@ -77,7 +80,7 @@ router.post('/order', requireAuth, async (req, res) => {
   const order = {
     id: nextId,
     timestamp: new Date().toISOString().slice(0, 19),
-    client: String(client).trim(),
+    client: client ? String(client).trim() : '',
     buzzer: buzzer ? Number(buzzer) : null,
     pizzas: pizzas.map(p => String(p).trim()),
     comment: comment ? String(comment).trim() : ''

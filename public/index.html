@@ -21,16 +21,19 @@
     <div id="success-banner" class="success-banner" style="display:none"></div>
 
     <form id="order-form" class="order-form">
-      <div class="form-group">
-        <label for="client">Nom du client <span class="required">*</span></label>
-        <input type="text" id="client" name="client" placeholder="Ex: Martin" required autocomplete="off">
-      </div>
 
-      <div class="form-group">
-        <label for="buzzer">Numéro de bipeur</label>
-        <input type="number" id="buzzer" name="buzzer" min="1" max="30" placeholder="1-30">
-        <div id="buzzer-suggestions" class="suggestions"></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="client">Nom du client</label>
+          <input type="text" id="client" name="client" placeholder="Ex: Martin" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label for="buzzer">Numéro de bipeur</label>
+          <input type="number" id="buzzer" name="buzzer" min="1" max="30" placeholder="1–30">
+          <div id="buzzer-suggestions" class="suggestions"></div>
+        </div>
       </div>
+      <div id="identity-error" class="error-msg" style="display:none">Indiquez un nom ou un numéro de bipeur</div>
 
       <div class="form-group">
         <label>Pizzas <span class="required">*</span></label>
@@ -48,18 +51,15 @@
   </main>
 
   <script>
-    // Check auth
     (async () => {
       const res = await fetch('/orders');
       if (res.status === 401) window.location.href = '/pin.html';
     })();
 
-    const PIZZAS = [];
+    const quantities = {};  // { pizzaName: count }
     let activeOrders = [];
 
-    async function loadConfig() {
-      // We'll derive pizza list from a config endpoint or embed it
-      // Fetch orders to get active buzzers
+    async function loadOrders() {
       const res = await fetch('/orders');
       if (!res.ok) return;
       activeOrders = await res.json();
@@ -67,24 +67,51 @@
     }
 
     async function loadPizzas() {
-      // Fetch pizza list from server
       const res = await fetch('/config-pizzas');
-      if (res.ok) {
-        const data = await res.json();
-        PIZZAS.push(...data);
-      }
-      renderPizzas();
+      if (!res.ok) return;
+      const pizzas = await res.json();
+      pizzas.forEach(p => { quantities[p] = 0; });
+      renderPizzas(pizzas);
     }
 
-    function renderPizzas() {
+    function renderPizzas(pizzas) {
       const grid = document.getElementById('pizza-list');
       grid.innerHTML = '';
-      PIZZAS.forEach(pizza => {
-        const label = document.createElement('label');
-        label.className = 'pizza-option';
-        label.innerHTML = `<input type="checkbox" name="pizzas" value="${pizza}"><span>${pizza}</span>`;
-        grid.appendChild(label);
+      pizzas.forEach(name => {
+        const card = document.createElement('div');
+        card.className = 'pizza-counter';
+        card.dataset.name = name;
+        card.innerHTML = `
+          <span class="pizza-name">${name}</span>
+          <div class="counter-controls">
+            <button type="button" class="counter-btn minus" data-name="${name}" aria-label="Moins">−</button>
+            <span class="counter-value" id="qty-${CSS.escape(name)}">0</span>
+            <button type="button" class="counter-btn plus" data-name="${name}" aria-label="Plus">+</button>
+          </div>`;
+        grid.appendChild(card);
       });
+
+      grid.addEventListener('click', e => {
+        const btn = e.target.closest('.counter-btn');
+        if (!btn) return;
+        const name = btn.dataset.name;
+        if (btn.classList.contains('plus')) {
+          quantities[name] = (quantities[name] || 0) + 1;
+        } else {
+          quantities[name] = Math.max(0, (quantities[name] || 0) - 1);
+        }
+        updateCard(name);
+        document.getElementById('pizza-error').style.display = 'none';
+      });
+    }
+
+    function updateCard(name) {
+      const qty = quantities[name] || 0;
+      const card = document.querySelector(`.pizza-counter[data-name="${name}"]`);
+      const display = document.getElementById('qty-' + CSS.escape(name));
+      if (!card || !display) return;
+      display.textContent = qty;
+      card.classList.toggle('active', qty > 0);
     }
 
     function renderBuzzerSuggestions() {
@@ -94,39 +121,48 @@
         if (!usedBuzzers.has(i)) free.push(i);
       }
       const el = document.getElementById('buzzer-suggestions');
-      if (free.length === 0) {
-        el.innerHTML = '';
-        return;
-      }
-      el.innerHTML = 'Libres : ' + free.map(n =>
-        `<button type="button" class="suggestion-chip" onclick="setBuzzer(${n})">${n}</button>`
-      ).join('');
+      el.innerHTML = free.length
+        ? 'Libres : ' + free.map(n =>
+            `<button type="button" class="suggestion-chip" onclick="setBuzzer(${n})">${n}</button>`
+          ).join('')
+        : '';
     }
 
-    window.setBuzzer = (n) => {
-      document.getElementById('buzzer').value = n;
-    };
+    window.setBuzzer = (n) => { document.getElementById('buzzer').value = n; };
 
-    const form = document.getElementById('order-form');
-    const successBanner = document.getElementById('success-banner');
+    function resetForm() {
+      document.getElementById('client').value = '';
+      document.getElementById('buzzer').value = '';
+      document.getElementById('comment').value = '';
+      Object.keys(quantities).forEach(name => {
+        quantities[name] = 0;
+        updateCard(name);
+      });
+    }
 
-    form.addEventListener('submit', async (e) => {
+    document.getElementById('order-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+
+      const identityError = document.getElementById('identity-error');
       const pizzaError = document.getElementById('pizza-error');
+      identityError.style.display = 'none';
       pizzaError.style.display = 'none';
 
       const client = document.getElementById('client').value.trim();
       const buzzer = document.getElementById('buzzer').value;
       const comment = document.getElementById('comment').value.trim();
-      const pizzas = Array.from(form.querySelectorAll('input[name="pizzas"]:checked')).map(c => c.value);
 
-      if (!client) return;
-      if (pizzas.length === 0) {
-        pizzaError.style.display = 'block';
-        return;
-      }
+      // Build pizzas array with repetitions for quantities
+      const pizzas = Object.entries(quantities)
+        .flatMap(([name, qty]) => Array(qty).fill(name));
 
-      const body = { client, pizzas, comment };
+      let valid = true;
+      if (!client && !buzzer) { identityError.style.display = 'block'; valid = false; }
+      if (pizzas.length === 0) { pizzaError.style.display = 'block'; valid = false; }
+      if (!valid) return;
+
+      const body = { pizzas, comment };
+      if (client) body.client = client;
       if (buzzer) body.buzzer = Number(buzzer);
 
       try {
@@ -138,14 +174,16 @@
 
         if (res.ok) {
           const order = await res.json();
-          successBanner.textContent = `Commande #${order.id} pour ${order.client} envoyée !`;
-          successBanner.style.display = 'block';
-          form.reset();
-          setTimeout(() => { successBanner.style.display = 'none'; }, 4000);
-          await loadConfig();
+          const label = order.client || `Bipeur ${order.buzzer}`;
+          const banner = document.getElementById('success-banner');
+          banner.textContent = `Commande #${order.id} pour ${label} envoyée !`;
+          banner.style.display = 'block';
+          resetForm();
+          setTimeout(() => { banner.style.display = 'none'; }, 4000);
+          await loadOrders();
         } else {
           const err = await res.json();
-          alert('Erreur: ' + err.error);
+          alert('Erreur : ' + err.error);
         }
       } catch {
         alert('Erreur réseau');
@@ -153,7 +191,7 @@
     });
 
     loadPizzas();
-    loadConfig();
+    loadOrders();
   </script>
 </body>
 </html>
