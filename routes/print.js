@@ -59,6 +59,67 @@ const ESC_DBL_HEIGHT = Buffer.from([0x1B, 0x21, 0x10]); // ×2 hauteur seule
 const GS_3X          = Buffer.from([0x1D, 0x21, 0x22]); // ×3 hauteur + ×3 largeur
 const GS_RESET       = Buffer.from([0x1D, 0x21, 0x00]); // reset GS !
 
+// TM-m30 : papier 80mm, zone imprimable 576 dots = 72 bytes par ligne raster
+const DOTS_PER_LINE = 72;
+const DOTS_PER_CHAR = 12; // largeur d'un char à taille ×1
+
+// Barre noire pleine via GS v 0 (raster bitmap)
+function solidBar(heightDots = 4) {
+  const w = DOTS_PER_LINE;
+  const header = Buffer.from([0x1D, 0x76, 0x30, 0x00,
+    w & 0xFF, (w >> 8) & 0xFF,
+    heightDots & 0xFF, (heightDots >> 8) & 0xFF]);
+  return Buffer.concat([header, Buffer.alloc(w * heightDots, 0xFF)]);
+}
+
+// Barre en tirets (alternance 6px noir / 4px blanc) via GS v 0
+function dashedBar(heightDots = 3) {
+  const w = DOTS_PER_LINE;
+  const row = Buffer.alloc(w);
+  for (let i = 0; i < w; i++) row[i] = (Math.floor(i / 5) % 2 === 0) ? 0xF8 : 0x00;
+  const header = Buffer.from([0x1D, 0x76, 0x30, 0x00,
+    w & 0xFF, (w >> 8) & 0xFF,
+    heightDots & 0xFF, (heightDots >> 8) & 0xFF]);
+  const data = Buffer.concat(Array(heightDots).fill(row));
+  return Buffer.concat([header, data]);
+}
+
+// Imprime "client" à gauche (normal) et le numéro de bipeur à droite (×3)
+// sur la même zone via positionnement absolu ESC $
+function printClientBuzzer(printer, client, buzzer) {
+  if (!buzzer) {
+    // Pas de bipeur : juste le client en ×2 hauteur
+    printer.raw(ESC_DBL_HEIGHT);
+    printer.text(client || '');
+    printer.raw(ESC_RESET);
+    return;
+  }
+
+  const buzzerStr = String(buzzer);
+  // Largeur de buzzerStr en dots à taille ×3 : chaque char = 12*3 = 36 dots
+  const buzzerDots = buzzerStr.length * DOTS_PER_CHAR * 3;
+  const buzzerPos  = 576 - buzzerDots; // position absolue en dots
+
+  // Client : normal, aligné à gauche
+  if (client) {
+    printer.raw(ESC_DBL_HEIGHT);
+    printer.pureText(client);
+    printer.raw(ESC_RESET);
+  }
+
+  // Positionnement absolu vers la droite, puis bipeur en ×3
+  printer.raw(Buffer.from([
+    0x1B, 0x24,                          // ESC $
+    buzzerPos & 0xFF, (buzzerPos >> 8) & 0xFF
+  ]));
+  printer.raw(GS_3X);
+  printer.pureText(buzzerStr);
+  printer.raw(GS_RESET);
+
+  // Saut de ligne pour terminer la zone (la hauteur ×3 occupe 3 lignes)
+  printer.raw(Buffer.from([0x0A]));
+}
+
 async function printOrder(order) {
   if (!escposAvailable) {
     console.log('Print skipped (no printer):', order);
@@ -82,44 +143,39 @@ async function printOrder(order) {
 
       try {
         const printer = makePrinter(device);
-        const SEP  = '================================';
-        const DASH = '--------------------------------';
         const heure = formatTime(order.timestamp);
         const grouped = groupPizzas(order.pizzas);
 
-        // ── En-tête : #id à gauche, heure à droite ───
+        // ── En-tête : #id à gauche, heure à droite (×2) ──
         printer.align('lt');
         printer.raw(ESC_DBL);
-        printer.text(twoCol(`#${order.id}`, heure, 24)); // ×2 largeur = 24 chars
+        printer.text(twoCol(`#${order.id}`, heure, 24));
         printer.raw(ESC_RESET);
-        printer.text(SEP);
+        printer.raw(solidBar(5));
 
-        // ── Client + bipeur sur la même ligne ─────────
-        const clientStr = order.client || '';
-        const buzzerStr = order.buzzer ? `BIPEUR : ${order.buzzer}` : '';
-        if (clientStr || buzzerStr) {
-          printer.align('lt');
-          printer.text(twoCol(clientStr, buzzerStr));
-        }
-
-        printer.text(SEP);
-
-        // ── Pizzas (ESC ! ×2 hauteur) ─────────────────
+        // ── Client (gauche) + bipeur (droite, ×3) ─────────
         printer.align('lt');
+        printClientBuzzer(printer, order.client, order.buzzer);
+        printer.raw(solidBar(5));
+
+        // ── Pizzas (×2 hauteur) ────────────────────────────
         printer.feed(1);
+        printer.align('lt');
         for (const { name, qty } of grouped) {
           printer.raw(ESC_DBL_HEIGHT);
           printer.text(`${qty}x  ${name}`);
         }
         printer.raw(ESC_RESET);
         printer.feed(1);
-        printer.text(DASH);
+        printer.raw(dashedBar(3));
 
-        // ── Commentaire ────────────────────────────────
-        if (order.comment) printer.text(`Note : ${order.comment}`);
+        // ── Commentaire ────────────────────────────────────
+        if (order.comment) {
+          printer.feed(1);
+          printer.text(`Note : ${order.comment}`);
+        }
 
-        printer.text(SEP);
-        printer.feed(2);
+        printer.feed(3);
         printer.cut();
 
         await new Promise((res, rej) => printer.close((e) => e ? rej(e) : res()));
