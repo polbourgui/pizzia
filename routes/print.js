@@ -6,14 +6,14 @@ const { requireAuth } = require('./auth');
 const router = express.Router();
 
 let escposAvailable = false;
-let Printer, USB;
+let Printer, USB, Image;
 
 // Try to load escpos modules gracefully
 try {
   const core = require('@node-escpos/core');
   const usbAdapter = require('@node-escpos/usb-adapter');
   Printer = core.Printer;
-  // The USB adapter exports as default in this version
+  Image = core.Image;
   USB = usbAdapter.default || usbAdapter.USB || usbAdapter;
   escposAvailable = true;
 } catch (e) {
@@ -150,4 +150,62 @@ router.post('/:id', requireAuth, async (req, res) => {
   }
 });
 
-module.exports = { router, printOrder };
+// Path to the logo image — operator can replace this file
+const LOGO_PATH = path.join(__dirname, '..', 'public', 'logo.png');
+
+async function printStartup() {
+  if (!escposAvailable) {
+    console.log('[startup] Printing disabled (escpos unavailable)');
+    return;
+  }
+
+  return new Promise((resolve) => {
+    let device;
+    try {
+      device = new USB();
+    } catch (e) {
+      console.warn('[startup] USB printer not found:', e.message);
+      return resolve();
+    }
+
+    device.open(async (err) => {
+      if (err) {
+        console.warn('[startup] Printer open error:', err.message);
+        return resolve();
+      }
+
+      try {
+        const printer = new Printer(device);
+        const line = '================================';
+        const now = new Date().toLocaleString('fr-FR', { hour12: false });
+
+        // Print logo if file exists
+        if (fs.existsSync(LOGO_PATH)) {
+          const img = await Image.load(LOGO_PATH);
+          await printer.align('ct').image(img, 'd24');
+        } else {
+          await printer.align('ct').size(1, 1).text('PIZZIA').size(0, 0);
+        }
+
+        await printer
+          .align('ct')
+          .text(line)
+          .text(`Demarrage : ${now}`)
+          .text('Imprimante operationnelle')
+          .text(line)
+          .feed(2)
+          .cut()
+          .close();
+
+        console.log('[startup] Ticket imprime avec succes');
+        resolve();
+      } catch (e) {
+        console.warn('[startup] Erreur impression:', e.message);
+        try { device.close(); } catch {}
+        resolve();
+      }
+    });
+  });
+}
+
+module.exports = { router, printOrder, printStartup };

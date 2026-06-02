@@ -5,7 +5,7 @@ const config = require('./config.json');
 
 const { router: authRouter } = require('./routes/auth');
 const ordersRouter = require('./routes/orders');
-const { router: printRouter } = require('./routes/print');
+const { router: printRouter, printStartup } = require('./routes/print');
 
 const app = express();
 
@@ -45,4 +45,6 @@ app.get('/', (req, res) => {
 const port = config.port || 3000;
 app.listen(port, () => {
   console.log(`PIZZIA running on port ${port}`);
+  // Print startup ticket (non-blocking — errors are swallowed internally)
+  printStartup();
 });
