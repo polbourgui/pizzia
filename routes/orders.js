@@ -91,7 +91,7 @@ router.post('/order', requireAuth, async (req, res) => {
 
   const order = {
     id: nextId,
-    timestamp: new Date().toISOString().slice(0, 19),
+    timestamp: new Date().toLocaleString('sv-SE', { hour12: false }).replace(' ', 'T').slice(0, 19),
     client: client ? String(client).trim() : '',
     buzzer: buzzer ? Number(buzzer) : null,
     pizzas: pizzas.map(p => String(p).trim()),
