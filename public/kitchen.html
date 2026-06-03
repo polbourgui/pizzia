@@ -11,13 +11,12 @@
     <span class="logo">PIZZIA</span>
     <div class="nav-links">
       <a href="/" class="btn btn-sm">Commandes</a>
-      <button class="btn btn-sm" onclick="toggleStocks()">Stocks</button>
       <a href="/logout" class="btn btn-sm btn-ghost">Déconnexion</a>
     </div>
   </nav>
 
   <!-- Panneau stocks (masqué par défaut) -->
-  <div id="stocks-panel" class="stocks-panel" style="display:none">
+  <div id="stocks-panel" class="stocks-panel">
     <div class="stocks-inner container">
       <h3 class="stocks-title">Gestion des stocks</h3>
       <p class="stocks-hint">Laisser vide = illimité · 0 = épuisé</p>
@@ -104,13 +103,6 @@
     };
 
     // ── Stocks ─────────────────────────────────────
-    window.toggleStocks = () => {
-      const panel = document.getElementById('stocks-panel');
-      const visible = panel.style.display !== 'none';
-      panel.style.display = visible ? 'none' : 'block';
-      if (!visible) renderStocksPanel();
-    };
-
     async function loadStocks() {
       const res = await fetch('/stocks');
       if (res.ok) stocks = await res.json();
@@ -168,6 +160,7 @@
       if (rp.ok) pizzas = await rp.json();
       if (rt.ok) tapas  = await rt.json();
       await loadStocks();
+      renderStocksPanel();
     }
 
     // SSE
