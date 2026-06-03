@@ -144,7 +144,8 @@ async function printOrder(order) {
       try {
         const printer = makePrinter(device);
         const heure = formatTime(order.timestamp);
-        const grouped = groupPizzas(order.pizzas);
+        const grouped      = groupPizzas(order.pizzas || []);
+        const groupedTapas = groupPizzas(order.tapas  || []);
 
         // ── En-tête : #id à gauche, heure à droite (normal) ──
         printer.align('lt');
@@ -164,6 +165,16 @@ async function printOrder(order) {
           printer.text(`${qty}x  ${name}`);
         }
         printer.raw(ESC_RESET);
+
+        // ── Tapas (×2 hauteur, si présentes) ──────────────
+        if (groupedTapas.length > 0) {
+          for (const { name, qty } of groupedTapas) {
+            printer.raw(ESC_DBL_HEIGHT);
+            printer.text(`${qty}x  ${name}`);
+          }
+          printer.raw(ESC_RESET);
+        }
+
         printer.feed(1);
         printer.raw(solidBar(5));
 

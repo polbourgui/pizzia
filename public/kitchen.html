@@ -89,7 +89,8 @@
             <div class="order-client">${esc(order.client)}</div>
             ${buzzerHtml}
             <ul class="pizza-list">
-              ${order.pizzas.map(p => `<li>${esc(p)}</li>`).join('')}
+              ${(order.pizzas || []).map(p => `<li>${esc(p)}</li>`).join('')}
+              ${(order.tapas  || []).map(t => `<li class="tapa-item">${esc(t)}</li>`).join('')}
             </ul>
             ${commentHtml}
             <button class="btn btn-sm btn-reprint" onclick="reprint(${esc(order.id)})">Reimprimer</button>

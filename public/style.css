@@ -437,6 +437,21 @@ body {
   color: var(--primary);
 }
 
+.pizza-list li.tapa-item::before {
+  content: '◦';
+  color: var(--orange);
+}
+
+.section-label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.4rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .order-comment {
   font-size: 0.82rem;
   color: var(--orange);

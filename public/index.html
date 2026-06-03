@@ -36,14 +36,20 @@
       <div id="identity-error" class="error-msg" style="display:none">Indiquez un nom ou un numéro de bipeur</div>
 
       <div class="form-group">
-        <label>Pizzas <span class="required">*</span></label>
+        <label class="section-label">🍕 Pizzas</label>
         <div id="pizza-list" class="pizza-grid"></div>
-        <div id="pizza-error" class="error-msg" style="display:none">Sélectionnez au moins une pizza</div>
       </div>
 
       <div class="form-group">
+        <label class="section-label">🫙 Tapas</label>
+        <div id="tapas-list" class="pizza-grid"></div>
+      </div>
+
+      <div id="items-error" class="error-msg" style="display:none">Sélectionnez au moins un article</div>
+
+      <div class="form-group">
         <label for="comment">Commentaire</label>
-        <textarea id="comment" name="comment" rows="2" placeholder="Ex: sans oignon sur la Reine"></textarea>
+        <textarea id="comment" name="comment" rows="2" placeholder="Ex: sans oignon sur la Regina"></textarea>
       </div>
 
       <button type="submit" class="btn btn-primary btn-full">Envoyer la commande</button>
@@ -56,7 +62,7 @@
       if (res.status === 401) window.location.href = '/pin.html';
     })();
 
-    const quantities = {};  // { pizzaName: count }
+    const quantities = {};
     let activeOrders = [];
 
     async function loadOrders() {
@@ -66,18 +72,11 @@
       renderBuzzerSuggestions();
     }
 
-    async function loadPizzas() {
-      const res = await fetch('/config-pizzas');
-      if (!res.ok) return;
-      const pizzas = await res.json();
-      pizzas.forEach(p => { quantities[p] = 0; });
-      renderPizzas(pizzas);
-    }
-
-    function renderPizzas(pizzas) {
-      const grid = document.getElementById('pizza-list');
+    function makeCounterGrid(items, containerId) {
+      const grid = document.getElementById(containerId);
       grid.innerHTML = '';
-      pizzas.forEach(name => {
+      items.forEach(name => {
+        if (!(name in quantities)) quantities[name] = 0;
         const card = document.createElement('div');
         card.className = 'pizza-counter';
         card.dataset.name = name;
@@ -101,13 +100,22 @@
           quantities[name] = Math.max(0, (quantities[name] || 0) - 1);
         }
         updateCard(name);
-        document.getElementById('pizza-error').style.display = 'none';
+        document.getElementById('items-error').style.display = 'none';
       });
+    }
+
+    async function loadMenu() {
+      const [rp, rt] = await Promise.all([
+        fetch('/config-pizzas'),
+        fetch('/config-tapas')
+      ]);
+      if (rp.ok) makeCounterGrid(await rp.json(), 'pizza-list');
+      if (rt.ok) makeCounterGrid(await rt.json(), 'tapas-list');
     }
 
     function updateCard(name) {
       const qty = quantities[name] || 0;
-      const card = document.querySelector(`.pizza-counter[data-name="${name}"]`);
+      const card = document.querySelector(`.pizza-counter[data-name="${CSS.escape(name)}"]`);
       const display = document.getElementById('qty-' + CSS.escape(name));
       if (!card || !display) return;
       display.textContent = qty;
@@ -143,25 +151,26 @@
     document.getElementById('order-form').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const identityError = document.getElementById('identity-error');
-      const pizzaError = document.getElementById('pizza-error');
-      identityError.style.display = 'none';
-      pizzaError.style.display = 'none';
+      document.getElementById('identity-error').style.display = 'none';
+      document.getElementById('items-error').style.display = 'none';
 
-      const client = document.getElementById('client').value.trim();
-      const buzzer = document.getElementById('buzzer').value;
+      const client  = document.getElementById('client').value.trim();
+      const buzzer  = document.getElementById('buzzer').value;
       const comment = document.getElementById('comment').value.trim();
 
-      // Build pizzas array with repetitions for quantities
-      const pizzas = Object.entries(quantities)
-        .flatMap(([name, qty]) => Array(qty).fill(name));
+      // Séparer pizzas et tapas depuis quantities
+      const pizzaNames = Array.from(document.querySelectorAll('#pizza-list .pizza-counter')).map(c => c.dataset.name);
+      const tapasNames = Array.from(document.querySelectorAll('#tapas-list .pizza-counter')).map(c => c.dataset.name);
+
+      const pizzas = pizzaNames.flatMap(n => Array(quantities[n] || 0).fill(n));
+      const tapas  = tapasNames.flatMap(n => Array(quantities[n] || 0).fill(n));
 
       let valid = true;
-      if (!client && !buzzer) { identityError.style.display = 'block'; valid = false; }
-      if (pizzas.length === 0) { pizzaError.style.display = 'block'; valid = false; }
+      if (!client && !buzzer) { document.getElementById('identity-error').style.display = 'block'; valid = false; }
+      if (pizzas.length === 0 && tapas.length === 0) { document.getElementById('items-error').style.display = 'block'; valid = false; }
       if (!valid) return;
 
-      const body = { pizzas, comment };
+      const body = { pizzas, tapas, comment };
       if (client) body.client = client;
       if (buzzer) body.buzzer = Number(buzzer);
 
@@ -190,7 +199,7 @@
       }
     });
 
-    loadPizzas();
+    loadMenu();
     loadOrders();
   </script>
 </body>

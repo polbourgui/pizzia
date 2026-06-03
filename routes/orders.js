@@ -67,22 +67,24 @@ router.get('/orders', requireAuth, (req, res) => {
 
 // POST /order — créer une commande (auth requise)
 router.post('/order', requireAuth, async (req, res) => {
-  const { client, buzzer, pizzas, comment } = req.body;
+  const { client, buzzer, pizzas = [], tapas = [], comment } = req.body;
 
   if (!client && !buzzer) {
     return res.status(400).json({ error: 'Nom ou numéro de bipeur requis' });
   }
-  if (!pizzas || !Array.isArray(pizzas) || pizzas.length === 0) {
-    return res.status(400).json({ error: 'Au moins une pizza requise' });
+  if ((!Array.isArray(pizzas) || pizzas.length === 0) &&
+      (!Array.isArray(tapas)  || tapas.length === 0)) {
+    return res.status(400).json({ error: 'Au moins un article requis' });
   }
 
-  // Input validation (Finding 8)
   const MAX_CLIENT = 60, MAX_COMMENT = 300;
-  const allowed = new Set(config.pizzas);
+  const allowedPizzas = new Set(config.pizzas);
+  const allowedTapas  = new Set(config.tapas);
 
   if (client && String(client).length > MAX_CLIENT) return res.status(400).json({ error: 'Nom trop long' });
   if (comment && String(comment).length > MAX_COMMENT) return res.status(400).json({ error: 'Commentaire trop long' });
-  if (!pizzas.every(p => allowed.has(p))) return res.status(400).json({ error: 'Pizza invalide' });
+  if (pizzas.length && !pizzas.every(p => allowedPizzas.has(p))) return res.status(400).json({ error: 'Pizza invalide' });
+  if (tapas.length  && !tapas.every(t => allowedTapas.has(t)))   return res.status(400).json({ error: 'Tapa invalide' });
 
   const data = loadOrders();
   const nextId = data.orders.length > 0
@@ -95,6 +97,7 @@ router.post('/order', requireAuth, async (req, res) => {
     client: client ? String(client).trim() : '',
     buzzer: buzzer ? Number(buzzer) : null,
     pizzas: pizzas.map(p => String(p).trim()),
+    tapas:  tapas.map(t => String(t).trim()),
     comment: comment ? String(comment).trim() : ''
   };
 

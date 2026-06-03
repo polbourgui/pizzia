@@ -63,6 +63,9 @@ app.get('/logout', (req, res) => {
 app.get('/config-pizzas', (req, res) => {
   res.json(config.pizzas || []);
 });
+app.get('/config-tapas', (req, res) => {
+  res.json(config.tapas || []);
+});
 app.use('/', ordersRouter);
 app.use('/print', printRouter);
 
