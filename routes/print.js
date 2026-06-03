@@ -38,8 +38,9 @@ const PRINTER_WIDTH = 48; // caractères par ligne à taille normale
 // donc on envoie la commande ESC t manuellement via raw().
 // Code page 39 = ISO-8859-1 sur Epson TM-m30.
 function makePrinter(device) {
-  const p = new Printer(device, { encoding: 'ISO-8859-1', width: PRINTER_WIDTH });
-  p.raw(Buffer.from([0x1B, 0x74, 39])); // ESC t 39 = ISO-8859-1
+  // CP850 / code page 2 = Western European, fiable sur TM-m30 pour tous les accents français
+  const p = new Printer(device, { encoding: 'CP850', width: PRINTER_WIDTH });
+  p.raw(Buffer.from([0x1B, 0x74, 2])); // ESC t 2 = PC850
   return p;
 }
 
@@ -168,6 +169,8 @@ async function printOrder(order) {
 
         // ── Tapas (×2 hauteur, si présentes) ──────────────
         if (groupedTapas.length > 0) {
+          printer.raw(ESC_RESET);
+          printer.raw(dashedBar(3));
           for (const { name, qty } of groupedTapas) {
             printer.raw(ESC_DBL_HEIGHT);
             printer.text(`${qty}x  ${name}`);

@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { requireAuth } = require('./auth');
 const { printOrder } = require('./print');
+const { deductStock, loadStocks } = require('./stocks');
 const config = require('../config.json');
 
 const router = express.Router();
@@ -86,6 +87,18 @@ router.post('/order', requireAuth, async (req, res) => {
   if (pizzas.length && !pizzas.every(p => allowedPizzas.has(p))) return res.status(400).json({ error: 'Pizza invalide' });
   if (tapas.length  && !tapas.every(t => allowedTapas.has(t)))   return res.status(400).json({ error: 'Tapa invalide' });
 
+  // Vérifier le stock disponible
+  const stocks = loadStocks();
+  const allItems = [...pizzas, ...tapas];
+  const counts = {};
+  allItems.forEach(i => { counts[i] = (counts[i] || 0) + 1; });
+  for (const [item, qty] of Object.entries(counts)) {
+    const available = stocks[item];
+    if (available !== null && available !== undefined && available < qty) {
+      return res.status(409).json({ error: `Stock insuffisant : ${item} (${available} restant${available > 1 ? 's' : ''})` });
+    }
+  }
+
   const data = loadOrders();
   const nextId = data.orders.length > 0
     ? Math.max(...data.orders.map(o => o.id)) + 1
@@ -103,6 +116,7 @@ router.post('/order', requireAuth, async (req, res) => {
 
   data.orders.push(order);
   saveOrders(data);
+  deductStock(pizzas, tapas);
   broadcastOrders(data);
 
   printOrder(order).catch(() => {});

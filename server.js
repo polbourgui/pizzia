@@ -12,6 +12,7 @@ const { router: authRouter } = require('./routes/auth');
 const ordersRouter = require('./routes/orders');
 const os = require('os');
 const { router: printRouter, printStartup, printNetworkError } = require('./routes/print');
+const { router: stocksRouter } = require('./routes/stocks');
 
 const app = express();
 
@@ -67,6 +68,7 @@ app.get('/config-tapas', (req, res) => {
   res.json(config.tapas || []);
 });
 app.use('/', ordersRouter);
+app.use('/', stocksRouter);
 app.use('/print', printRouter);
 
 // Serve static files

@@ -11,9 +11,19 @@
     <span class="logo">PIZZIA</span>
     <div class="nav-links">
       <a href="/" class="btn btn-sm">Commandes</a>
+      <button class="btn btn-sm" onclick="toggleStocks()">Stocks</button>
       <a href="/logout" class="btn btn-sm btn-ghost">Déconnexion</a>
     </div>
   </nav>
+
+  <!-- Panneau stocks (masqué par défaut) -->
+  <div id="stocks-panel" class="stocks-panel" style="display:none">
+    <div class="stocks-inner container">
+      <h3 class="stocks-title">Gestion des stocks</h3>
+      <p class="stocks-hint">Laisser vide = illimité · 0 = épuisé</p>
+      <div id="stocks-grid" class="stocks-grid"></div>
+    </div>
+  </div>
 
   <main class="container">
     <div class="kitchen-header">
@@ -26,59 +36,50 @@
   </main>
 
   <script>
-    // Check auth
     (async () => {
       const res = await fetch('/orders');
       if (res.status === 401) window.location.href = '/pin.html';
     })();
 
-    let orders = [];
+    let orders  = [];
+    let stocks  = {};
+    let pizzas  = [];
+    let tapas   = [];
 
     function getElapsed(timestamp) {
-      const then = new Date(timestamp).getTime();
-      const now = Date.now();
-      return Math.floor((now - then) / 60000); // minutes
+      return Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000);
     }
-
-    function getAgeClass(minutes) {
-      if (minutes >= 20) return 'age-red';
-      if (minutes >= 10) return 'age-orange';
-      return 'age-neutral';
+    function getAgeClass(m) {
+      return m >= 20 ? 'age-red' : m >= 10 ? 'age-orange' : 'age-neutral';
     }
-
-    function formatTime(timestamp) {
-      return timestamp.replace('T', ' ').slice(0, 16);
-    }
-
+    function formatTime(ts) { return ts.replace('T', ' ').slice(0, 16); }
     function esc(s) {
       return String(s ?? '')
         .replace(/&/g,'&amp;').replace(/</g,'&lt;')
         .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
+    // ── Commandes ──────────────────────────────────
     function renderOrders() {
       const grid = document.getElementById('orders-grid');
       const countEl = document.getElementById('order-count');
-
       if (orders.length === 0) {
         grid.innerHTML = '<p class="empty-msg">Aucune commande pour le moment...</p>';
         countEl.textContent = '';
         return;
       }
-
       const sorted = [...orders].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
       countEl.textContent = `${sorted.length} commande${sorted.length > 1 ? 's' : ''}`;
-
       grid.innerHTML = sorted.map(order => {
         const minutes = getElapsed(order.timestamp);
         const ageClass = getAgeClass(minutes);
         const buzzerHtml = order.buzzer
-          ? `<div class="order-buzzer">Bipeur <strong>${esc(order.buzzer)}</strong></div>`
-          : '';
+          ? `<div class="order-buzzer">Bipeur <strong>${esc(order.buzzer)}</strong></div>` : '';
         const commentHtml = order.comment
-          ? `<div class="order-comment">Note : ${esc(order.comment)}</div>`
-          : '';
-
+          ? `<div class="order-comment">Note : ${esc(order.comment)}</div>` : '';
+        const pizzaItems  = (order.pizzas || []).map(p => `<li>${esc(p)}</li>`).join('');
+        const tapaItems   = (order.tapas  || []).map(t => `<li class="tapa-item">${esc(t)}</li>`).join('');
+        const separator   = pizzaItems && tapaItems ? '<li class="list-sep"></li>' : '';
         return `
           <div class="order-card ${ageClass}">
             <div class="card-header">
@@ -88,41 +89,94 @@
             </div>
             <div class="order-client">${esc(order.client)}</div>
             ${buzzerHtml}
-            <ul class="pizza-list">
-              ${(order.pizzas || []).map(p => `<li>${esc(p)}</li>`).join('')}
-              ${(order.tapas  || []).map(t => `<li class="tapa-item">${esc(t)}</li>`).join('')}
-            </ul>
+            <ul class="pizza-list">${pizzaItems}${separator}${tapaItems}</ul>
             ${commentHtml}
-            <button class="btn btn-sm btn-reprint" onclick="reprint(${esc(order.id)})">Reimprimer</button>
-          </div>
-        `;
+            <button class="btn btn-sm btn-reprint" onclick="reprint(${esc(order.id)})">Réimprimer</button>
+          </div>`;
       }).join('');
     }
 
     window.reprint = async (id) => {
       try {
         const res = await fetch(`/print/${id}`, { method: 'POST' });
-        if (!res.ok) {
-          const err = await res.json();
-          alert('Erreur impression: ' + err.error);
-        }
-      } catch {
-        alert('Erreur réseau');
-      }
+        if (!res.ok) alert('Erreur impression: ' + (await res.json()).error);
+      } catch { alert('Erreur réseau'); }
     };
 
-    // SSE connection
+    // ── Stocks ─────────────────────────────────────
+    window.toggleStocks = () => {
+      const panel = document.getElementById('stocks-panel');
+      const visible = panel.style.display !== 'none';
+      panel.style.display = visible ? 'none' : 'block';
+      if (!visible) renderStocksPanel();
+    };
+
+    async function loadStocks() {
+      const res = await fetch('/stocks');
+      if (res.ok) stocks = await res.json();
+    }
+
+    async function setStock(item, qty) {
+      await fetch('/stocks', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ item, qty: qty === '' ? null : Number(qty) })
+      });
+      await loadStocks();
+      renderStocksPanel();
+    }
+
+    function renderStocksPanel() {
+      const grid = document.getElementById('stocks-grid');
+      const sections = [
+        { label: '🍕 Pizzas', items: pizzas },
+        { label: '🫙 Tapas',  items: tapas  }
+      ];
+      grid.innerHTML = sections.map(({ label, items }) => `
+        <div class="stocks-section">
+          <div class="stocks-section-label">${label}</div>
+          ${items.map(item => {
+            const qty = stocks[item];
+            const epuise = qty !== null && qty !== undefined && qty === 0;
+            return `
+              <div class="stock-row${epuise ? ' epuise' : ''}">
+                <span class="stock-name">${esc(item)}</span>
+                <div class="stock-controls">
+                  <button class="counter-btn minus" onclick="adjustStock('${esc(item)}',-1)">−</button>
+                  <input class="stock-input" type="number" min="0"
+                    value="${qty === null || qty === undefined ? '' : qty}"
+                    placeholder="∞"
+                    onchange="setStock('${esc(item)}', this.value)"
+                    oninput="setStock('${esc(item)}', this.value)">
+                  <button class="counter-btn plus" onclick="adjustStock('${esc(item)}',+1)">+</button>
+                </div>
+                ${epuise ? '<span class="epuise-badge">ÉPUISÉ</span>' : ''}
+              </div>`;
+          }).join('')}
+        </div>`
+      ).join('');
+    }
+
+    window.adjustStock = async (item, delta) => {
+      const current = stocks[item];
+      const base = current === null || current === undefined ? 99 : current;
+      await setStock(item, Math.max(0, base + delta));
+    };
+
+    async function init() {
+      const [rp, rt] = await Promise.all([fetch('/config-pizzas'), fetch('/config-tapas')]);
+      if (rp.ok) pizzas = await rp.json();
+      if (rt.ok) tapas  = await rt.json();
+      await loadStocks();
+    }
+
+    // SSE
     const evtSource = new EventSource('/events');
-    evtSource.onmessage = (e) => {
-      orders = JSON.parse(e.data);
-      renderOrders();
-    };
-    evtSource.onerror = () => {
-      console.warn('SSE connection error, will retry...');
-    };
+    evtSource.onmessage = (e) => { orders = JSON.parse(e.data); renderOrders(); };
+    evtSource.onerror   = () => console.warn('SSE retry...');
 
-    // Refresh card colors every minute
     setInterval(renderOrders, 60000);
+    init();
   </script>
 </body>
 </html>
