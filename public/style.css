@@ -86,6 +86,17 @@ body {
 
 .btn-full { width: 100%; padding: 0.75rem; font-size: 1rem; }
 
+.btn-floating {
+  position: fixed;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 2rem);
+  max-width: 600px;
+  z-index: 100;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+}
+
 .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
 
 .btn-ghost { background: transparent; border: 1px solid var(--border); }
