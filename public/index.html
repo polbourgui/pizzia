@@ -115,6 +115,7 @@
     // ── Données ─────────────────────────────────────
     const quantities = {};
     let activeOrders = [];
+    let currentStocks = {};
     const freedBuzzers = new Set();
     const BUZZER_TTL_MS = 60 * 60 * 1000; // 1 heure
 
@@ -135,21 +136,29 @@
       renderBuzzerGrid();
     }
 
+    function isEpuise(name) {
+      const s = currentStocks[name];
+      return s !== null && s !== undefined && s === 0;
+    }
+
     function makeCounterGrid(items, containerId) {
       const grid = document.getElementById(containerId);
       grid.innerHTML = '';
       items.forEach(name => {
         if (!(name in quantities)) quantities[name] = 0;
+        const epuise = isEpuise(name);
         const card = document.createElement('div');
-        card.className = 'pizza-counter';
+        card.className = 'pizza-counter' + (epuise ? ' epuise' : '');
         card.dataset.name = name;
         card.innerHTML = `
           <span class="pizza-name">${name}</span>
-          <div class="counter-controls">
-            <button type="button" class="counter-btn minus" data-name="${name}" aria-label="Moins">−</button>
-            <span class="counter-value" id="qty-${CSS.escape(name)}">0</span>
-            <button type="button" class="counter-btn plus" data-name="${name}" aria-label="Plus">+</button>
-          </div>`;
+          ${epuise
+            ? `<span class="epuise-label">Épuisé</span>`
+            : `<div class="counter-controls">
+                <button type="button" class="counter-btn minus" data-name="${name}" aria-label="Moins">−</button>
+                <span class="counter-value" id="qty-${CSS.escape(name)}">0</span>
+                <button type="button" class="counter-btn plus" data-name="${name}" aria-label="Plus">+</button>
+              </div>`}`;
         grid.appendChild(card);
       });
 
@@ -157,6 +166,7 @@
         const btn = e.target.closest('.counter-btn');
         if (!btn) return;
         const name = btn.dataset.name;
+        if (isEpuise(name)) return;
         if (btn.classList.contains('plus')) {
           quantities[name] = (quantities[name] || 0) + 1;
         } else {
@@ -168,10 +178,12 @@
     }
 
     async function loadMenu() {
-      const [rp, rt] = await Promise.all([
+      const [rp, rt, rs] = await Promise.all([
         fetch('/config-pizzas'),
-        fetch('/config-tapas')
+        fetch('/config-tapas'),
+        fetch('/stocks')
       ]);
+      if (rs.ok) currentStocks = await rs.json();
       if (rp.ok) makeCounterGrid(await rp.json(), 'pizza-list');
       if (rt.ok) makeCounterGrid(await rt.json(), 'tapas-list');
     }

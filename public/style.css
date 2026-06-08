@@ -252,6 +252,19 @@ body {
   background: #2a1a0a;
 }
 
+.pizza-counter.epuise {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.epuise-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--red);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .pizza-name {
   font-size: 0.9rem;
   font-weight: 600;
