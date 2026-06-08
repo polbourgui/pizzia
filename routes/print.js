@@ -123,8 +123,7 @@ function printClientBuzzer(printer, client, buzzer) {
 
 async function printOrder(order) {
   if (!escposAvailable) {
-    console.log('Print skipped (no printer):', order);
-    return;
+    throw new Error('Module imprimante non disponible');
   }
 
   return new Promise((resolve, reject) => {
@@ -132,14 +131,12 @@ async function printOrder(order) {
     try {
       device = new USB();
     } catch (e) {
-      console.warn('USB printer not found:', e.message);
-      return resolve();
+      return reject(new Error('Imprimante USB non détectée'));
     }
 
     device.open(async (err) => {
       if (err) {
-        console.warn('Printer open error:', err.message);
-        return resolve();
+        return reject(new Error('Impossible d\'ouvrir l\'imprimante : ' + err.message));
       }
 
       try {
@@ -194,9 +191,8 @@ async function printOrder(order) {
 
         resolve();
       } catch (e) {
-        console.warn('Print error:', e.message);
         try { device.close(); } catch {}
-        resolve();
+        reject(new Error('Erreur impression : ' + e.message));
       }
     });
   });
