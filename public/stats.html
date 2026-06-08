@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PIZZIA — Statistiques</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav class="navbar">
+    <span class="logo">PIZZIA</span>
+    <div class="nav-links">
+      <a href="/" class="btn btn-sm">Commandes</a>
+      <a href="/kitchen.html" class="btn btn-sm">Cuisine</a>
+      <a href="/logout" class="btn btn-sm btn-ghost">Déconnexion</a>
+    </div>
+  </nav>
+
+  <main class="container">
+    <h2 class="page-title">Statistiques par service</h2>
+    <div id="stats-container"></div>
+  </main>
+
+  <script>
+    (async () => {
+      const res = await fetch('/stats');
+      if (res.status === 401) { window.location.href = '/pin.html'; return; }
+      if (!res.ok) return;
+      const days = await res.json();
+      const container = document.getElementById('stats-container');
+      if (days.length === 0) {
+        container.innerHTML = '<p class="empty-msg" style="padding:3rem 0;text-align:center">Aucun service enregistré.</p>';
+        return;
+      }
+      container.innerHTML = days.map(day => {
+        const totalUnits = Object.values(day.items).reduce((a, b) => a + b, 0);
+        const itemRows = Object.entries(day.items)
+          .sort((a, b) => b[1] - a[1])
+          .map(([name, qty]) => `
+            <div class="stat-item-row">
+              <span class="stat-item-name">${esc(name)}</span>
+              <span class="stat-item-qty">${qty}</span>
+            </div>`).join('');
+        return `
+          <div class="stat-day-card">
+            <div class="stat-day-header">
+              <span class="stat-day-date">${formatDate(day.date)}</span>
+              <div class="stat-day-totals">
+                <span class="stat-badge">${day.orderCount} commande${day.orderCount > 1 ? 's' : ''}</span>
+                <span class="stat-badge stat-badge-units">${totalUnits} unité${totalUnits > 1 ? 's' : ''}</span>
+              </div>
+            </div>
+            <div class="stat-items">${itemRows || '<span style="color:var(--text-muted);font-size:.85rem">Aucun article</span>'}</div>
+          </div>`;
+      }).join('');
+    })();
+
+    function esc(s) {
+      return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+    function formatDate(d) {
+      const [y, m, day] = d.split('-');
+      return `${day}/${m}/${y}`;
+    }
+  </script>
+</body>
+</html>

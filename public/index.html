@@ -11,6 +11,7 @@
     <span class="logo">PIZZIA</span>
     <div class="nav-links">
       <a href="/kitchen.html" class="btn btn-sm">Cuisine</a>
+      <a href="/stats.html" class="btn btn-sm">Stats</a>
       <a href="/logout" class="btn btn-sm btn-ghost">Déconnexion</a>
     </div>
   </nav>
@@ -28,9 +29,9 @@
           <input type="text" id="client" name="client" placeholder="Ex: Martin" autocomplete="off">
         </div>
         <div class="form-group">
-          <label for="buzzer">Numéro de bipeur</label>
-          <input type="number" id="buzzer" name="buzzer" min="1" max="30" placeholder="1–30">
-          <div id="buzzer-suggestions" class="suggestions"></div>
+          <label class="section-label">Numéro de bipeur</label>
+          <div id="buzzer-grid" class="buzzer-grid"></div>
+          <input type="hidden" id="buzzer" name="buzzer">
         </div>
       </div>
       <div id="identity-error" class="error-msg" style="display:none">Indiquez un nom ou un numéro de bipeur</div>
@@ -52,7 +53,7 @@
         <textarea id="comment" name="comment" rows="2" placeholder="Ex: sans oignon sur la Regina"></textarea>
       </div>
 
-      <button type="submit" class="btn btn-primary btn-full btn-floating">Envoyer la commande</button>
+      <button type="submit" id="submit-btn" class="btn btn-send btn-full btn-floating">Envoyer la commande</button>
     </form>
   </main>
 
@@ -69,7 +70,7 @@
       const res = await fetch('/orders');
       if (!res.ok) return;
       activeOrders = await res.json();
-      renderBuzzerSuggestions();
+      renderBuzzerGrid();
     }
 
     function makeCounterGrid(items, containerId) {
@@ -122,21 +123,33 @@
       card.classList.toggle('active', qty > 0);
     }
 
-    function renderBuzzerSuggestions() {
+    function renderBuzzerGrid() {
       const usedBuzzers = new Set(activeOrders.map(o => o.buzzer).filter(Boolean));
-      const free = [];
-      for (let i = 1; i <= 30 && free.length < 6; i++) {
-        if (!usedBuzzers.has(i)) free.push(i);
+      const selected = Number(document.getElementById('buzzer').value) || null;
+      const grid = document.getElementById('buzzer-grid');
+      grid.innerHTML = '';
+      for (let i = 1; i <= 30; i++) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'buzzer-btn' +
+          (usedBuzzers.has(i) ? ' used' : '') +
+          (selected === i ? ' selected' : '');
+        btn.textContent = i;
+        btn.dataset.num = i;
+        if (!usedBuzzers.has(i)) {
+          btn.addEventListener('click', () => toggleBuzzer(i));
+        }
+        grid.appendChild(btn);
       }
-      const el = document.getElementById('buzzer-suggestions');
-      el.innerHTML = free.length
-        ? 'Libres : ' + free.map(n =>
-            `<button type="button" class="suggestion-chip" onclick="setBuzzer(${n})">${n}</button>`
-          ).join('')
-        : '';
     }
 
-    window.setBuzzer = (n) => { document.getElementById('buzzer').value = n; };
+    function toggleBuzzer(n) {
+      const input = document.getElementById('buzzer');
+      const current = Number(input.value) || null;
+      input.value = current === n ? '' : n;
+      renderBuzzerGrid();
+      document.getElementById('identity-error').style.display = 'none';
+    }
 
     function resetForm() {
       document.getElementById('client').value = '';
@@ -146,6 +159,7 @@
         quantities[name] = 0;
         updateCard(name);
       });
+      renderBuzzerGrid();
     }
 
     document.getElementById('order-form').addEventListener('submit', async (e) => {
@@ -158,7 +172,6 @@
       const buzzer  = document.getElementById('buzzer').value;
       const comment = document.getElementById('comment').value.trim();
 
-      // Séparer pizzas et tapas depuis quantities
       const pizzaNames = Array.from(document.querySelectorAll('#pizza-list .pizza-counter')).map(c => c.dataset.name);
       const tapasNames = Array.from(document.querySelectorAll('#tapas-list .pizza-counter')).map(c => c.dataset.name);
 
@@ -174,6 +187,11 @@
       if (client) body.client = client;
       if (buzzer) body.buzzer = Number(buzzer);
 
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.classList.add('sending');
+      btn.textContent = 'Envoi en cours…';
+
       try {
         const res = await fetch('/order', {
           method: 'POST',
@@ -184,23 +202,38 @@
         if (res.ok) {
           const order = await res.json();
           const label = order.client || `Bipeur ${order.buzzer}`;
+          btn.classList.remove('sending');
+          btn.classList.add('sent');
+          btn.textContent = '✓ Commande envoyée !';
           const banner = document.getElementById('success-banner');
           banner.textContent = `Commande #${order.id} pour ${label} envoyée !`;
           banner.style.display = 'block';
           resetForm();
           setTimeout(() => { banner.style.display = 'none'; }, 4000);
+          setTimeout(() => {
+            btn.disabled = false;
+            btn.classList.remove('sent');
+            btn.textContent = 'Envoyer la commande';
+          }, 2000);
           await loadOrders();
         } else {
           const err = await res.json();
+          btn.disabled = false;
+          btn.classList.remove('sending');
+          btn.textContent = 'Envoyer la commande';
           alert('Erreur : ' + err.error);
         }
       } catch {
+        btn.disabled = false;
+        btn.classList.remove('sending');
+        btn.textContent = 'Envoyer la commande';
         alert('Erreur réseau');
       }
     });
 
     loadMenu();
     loadOrders();
+    renderBuzzerGrid();
   </script>
 </body>
 </html>

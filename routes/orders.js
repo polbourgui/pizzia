@@ -66,6 +66,28 @@ router.get('/orders', requireAuth, (req, res) => {
   res.json(data.orders);
 });
 
+// GET /stats — historique par journée (auth requise)
+router.get('/stats', requireAuth, (req, res) => {
+  const dir = path.join(__dirname, '..', 'data');
+  if (!fs.existsSync(dir)) return res.json([]);
+  const files = fs.readdirSync(dir)
+    .filter(f => /^orders-\d{4}-\d{2}-\d{2}\.json$/.test(f))
+    .sort().reverse();
+  const result = files.map(file => {
+    const date = file.replace('orders-', '').replace('.json', '');
+    let data = { orders: [] };
+    try { data = JSON.parse(fs.readFileSync(path.join(dir, file), 'utf8')); } catch {}
+    const items = {};
+    data.orders.forEach(order => {
+      [...(order.pizzas || []), ...(order.tapas || [])].forEach(item => {
+        items[item] = (items[item] || 0) + 1;
+      });
+    });
+    return { date, orderCount: data.orders.length, items };
+  });
+  res.json(result);
+});
+
 // POST /order — créer une commande (auth requise)
 router.post('/order', requireAuth, async (req, res) => {
   const { client, buzzer, pizzas = [], tapas = [], comment } = req.body;
