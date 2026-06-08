@@ -142,14 +142,23 @@ router.post('/order', requireAuth, async (req, res) => {
     comment: comment ? String(comment).trim() : ''
   };
 
+  order.printOk = true;
   data.orders.push(order);
   saveOrders(data);
   deductStock(pizzas, tapas);
+
+  let printError = null;
+  try {
+    await printOrder(order);
+  } catch (e) {
+    printError = e.message || 'Erreur imprimante';
+    order.printOk = false;
+    data.orders[data.orders.length - 1].printOk = false;
+    saveOrders(data);
+  }
+
   broadcastOrders(data);
-
-  printOrder(order).catch(() => {});
-
-  res.status(201).json(order);
+  res.status(201).json({ ...order, printError });
 });
 
 module.exports = router;

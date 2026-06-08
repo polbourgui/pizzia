@@ -20,7 +20,7 @@
   <main class="container">
     <h2 class="page-title">Nouvelle commande</h2>
 
-    <div id="success-banner" class="success-banner" style="display:none"></div>
+    <div id="toast-container" class="toast-container"></div>
 
     <form id="order-form" class="order-form">
 
@@ -64,6 +64,55 @@
       if (res.status === 401) window.location.href = '/pin.html';
     })();
 
+    // ── Toasts ─────────────────────────────────────
+    function showToast({ type, message, orderId = null }) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      const icons = { green: '✓', orange: '⚠', red: '✗' };
+      const actionHtml = (type === 'orange' && orderId)
+        ? `<button class="toast-action">🖨 Réimprimer</button>` : '';
+      toast.innerHTML = `
+        <span class="toast-icon">${icons[type]}</span>
+        <span class="toast-msg">${message}</span>
+        ${actionHtml}
+        <button class="toast-close">×</button>`;
+      toast.querySelector('.toast-close').addEventListener('click', () => dismissToast(toast));
+      if (actionHtml) {
+        toast.querySelector('.toast-action').addEventListener('click', () => reprintFromToast(orderId, toast));
+      }
+      container.appendChild(toast);
+      if (type !== 'orange') setTimeout(() => dismissToast(toast), 5000);
+    }
+
+    function dismissToast(toast) {
+      toast.classList.add('toast-out');
+      setTimeout(() => toast.remove(), 300);
+    }
+
+    async function reprintFromToast(orderId, toast) {
+      const btn = toast.querySelector('.toast-action');
+      btn.disabled = true;
+      btn.textContent = 'Impression…';
+      try {
+        const res = await fetch(`/print/${orderId}`, { method: 'POST' });
+        if (res.ok) {
+          dismissToast(toast);
+          showToast({ type: 'green', message: 'Ticket réimprimé !' });
+        } else {
+          const err = await res.json();
+          btn.disabled = false;
+          btn.textContent = '🖨 Réimprimer';
+          showToast({ type: 'red', message: 'Réimpression échouée : ' + err.error });
+        }
+      } catch {
+        btn.disabled = false;
+        btn.textContent = '🖨 Réimprimer';
+        showToast({ type: 'red', message: 'Erreur réseau' });
+      }
+    }
+
+    // ── Données ─────────────────────────────────────
     const quantities = {};
     let activeOrders = [];
     const freedBuzzers = new Set();
@@ -253,11 +302,12 @@
           btn.classList.remove('sending');
           btn.classList.add('sent');
           btn.textContent = '✓ Commande envoyée !';
-          const banner = document.getElementById('success-banner');
-          banner.textContent = `Commande #${order.id} pour ${label} envoyée !`;
-          banner.style.display = 'block';
+          if (order.printOk) {
+            showToast({ type: 'green', message: `Commande #${order.id} — ${label}` });
+          } else {
+            showToast({ type: 'orange', message: `Commande #${order.id} enregistrée, ticket non imprimé`, orderId: order.id });
+          }
           resetForm();
-          setTimeout(() => { banner.style.display = 'none'; }, 4000);
           setTimeout(() => {
             isSubmitting = false;
             btn.disabled = false;
@@ -271,14 +321,14 @@
           btn.disabled = false;
           btn.classList.remove('sending');
           btn.textContent = 'Envoyer la commande';
-          alert('Erreur : ' + err.error);
+          showToast({ type: 'red', message: 'Erreur : ' + err.error });
         }
       } catch {
         isSubmitting = false;
         btn.disabled = false;
         btn.classList.remove('sending');
         btn.textContent = 'Envoyer la commande';
-        alert('Erreur réseau');
+        showToast({ type: 'red', message: 'Erreur réseau' });
       }
     });
 

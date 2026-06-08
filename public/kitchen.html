@@ -28,6 +28,8 @@
     </div>
   </div>
 
+  <div id="toast-container" class="toast-container"></div>
+
   <main class="container">
     <div class="kitchen-header">
       <h2 class="page-title">Cuisine</h2>
@@ -83,6 +85,8 @@
         const pizzaItems  = (order.pizzas || []).map(p => `<li>${esc(p)}</li>`).join('');
         const tapaItems   = (order.tapas  || []).map(t => `<li class="tapa-item">${esc(t)}</li>`).join('');
         const separator   = pizzaItems && tapaItems ? '<li class="list-sep"></li>' : '';
+        const printBadge  = order.printOk === false
+          ? `<div class="print-fail-badge">⚠ Non imprimé</div>` : '';
         return `
           <div class="order-card ${ageClass}">
             <div class="card-header">
@@ -90,21 +94,60 @@
               <span class="order-time">${formatTime(order.timestamp)}</span>
               <span class="order-elapsed">${minutes} min</span>
             </div>
+            ${printBadge}
             <div class="order-client">${esc(order.client)}</div>
             ${buzzerHtml}
             <ul class="pizza-list">${pizzaItems}${separator}${tapaItems}</ul>
             ${commentHtml}
-            <button class="btn btn-sm btn-reprint" onclick="reprint(${esc(order.id)})">Réimprimer</button>
+            <button class="btn btn-sm btn-reprint" data-id="${esc(order.id)}">Réimprimer</button>
           </div>`;
       }).join('');
     }
 
-    window.reprint = async (id) => {
+    // ── Toasts ─────────────────────────────────────
+    function showToast({ type, message }) {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      const icons = { green: '✓', orange: '⚠', red: '✗' };
+      toast.innerHTML = `
+        <span class="toast-icon">${icons[type]}</span>
+        <span class="toast-msg">${message}</span>
+        <button class="toast-close">×</button>`;
+      toast.querySelector('.toast-close').addEventListener('click', () => dismissToast(toast));
+      container.appendChild(toast);
+      if (type !== 'orange') setTimeout(() => dismissToast(toast), 5000);
+    }
+    function dismissToast(toast) {
+      toast.classList.add('toast-out');
+      setTimeout(() => toast.remove(), 300);
+    }
+
+    // ── Réimpression ────────────────────────────────
+    document.getElementById('orders-grid').addEventListener('click', async e => {
+      const btn = e.target.closest('.btn-reprint');
+      if (!btn) return;
+      const id = Number(btn.dataset.id);
+      btn.disabled = true;
+      btn.textContent = 'Impression…';
       try {
         const res = await fetch(`/print/${id}`, { method: 'POST' });
-        if (!res.ok) alert('Erreur impression: ' + (await res.json()).error);
-      } catch { alert('Erreur réseau'); }
-    };
+        if (res.ok) {
+          showToast({ type: 'green', message: 'Ticket réimprimé !' });
+          const r = await fetch('/orders');
+          if (r.ok) { orders = await r.json(); renderOrders(); }
+        } else {
+          const err = await res.json();
+          showToast({ type: 'red', message: 'Erreur impression : ' + err.error });
+          btn.disabled = false;
+          btn.textContent = 'Réimprimer';
+        }
+      } catch {
+        showToast({ type: 'red', message: 'Erreur réseau' });
+        btn.disabled = false;
+        btn.textContent = 'Réimprimer';
+      }
+    });
 
     // ── Stocks ─────────────────────────────────────
     async function loadStocks() {

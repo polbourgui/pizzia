@@ -246,6 +246,11 @@ router.post('/:id', requireAuth, async (req, res) => {
 
   try {
     await printOrder(order);
+    const idx = data.orders.findIndex(o => o.id === id);
+    if (idx !== -1) {
+      data.orders[idx].printOk = true;
+      fs.writeFileSync(file, JSON.stringify(data, null, 2));
+    }
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
