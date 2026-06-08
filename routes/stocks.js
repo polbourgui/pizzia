@@ -51,7 +51,7 @@ router.put('/stocks', requireAuth, (req, res) => {
   const { item, qty } = req.body;
   if (!item || !ALL_ITEMS.includes(item)) return res.status(400).json({ error: 'Article invalide' });
   const q = qty === null || qty === '' ? null : Number(qty);
-  if (q !== null && (isNaN(q) || q < 0)) return res.status(400).json({ error: 'Quantité invalide' });
+  if (q !== null && (isNaN(q) || q < 0 || !Number.isInteger(q))) return res.status(400).json({ error: 'Quantité invalide' });
   const stocks = loadStocks();
   stocks[item] = q;
   saveStocks(stocks);

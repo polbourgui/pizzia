@@ -38,7 +38,8 @@ function broadcastOrders(data) {
   for (const client of sseClients) {
     try {
       client.write(payload);
-    } catch {
+    } catch (e) {
+      console.error('SSE broadcast error:', e.message);
       sseClients.delete(client);
     }
   }
@@ -92,7 +93,8 @@ router.get('/stats', requireAuth, (req, res) => {
 router.post('/order', requireAuth, async (req, res) => {
   const { client, buzzer, pizzas = [], tapas = [], comment } = req.body;
 
-  if (!client && !buzzer) {
+  const clientTrimmed = client ? String(client).trim() : '';
+  if (!clientTrimmed && !buzzer) {
     return res.status(400).json({ error: 'Nom ou numéro de bipeur requis' });
   }
   if ((!Array.isArray(pizzas) || pizzas.length === 0) &&
@@ -104,8 +106,12 @@ router.post('/order', requireAuth, async (req, res) => {
   const allowedPizzas = new Set(config.pizzas);
   const allowedTapas  = new Set(config.tapas);
 
-  if (client && String(client).length > MAX_CLIENT) return res.status(400).json({ error: 'Nom trop long' });
+  if (buzzer && (Number(buzzer) < 1 || Number(buzzer) > 30 || !Number.isInteger(Number(buzzer))))
+    return res.status(400).json({ error: 'Numéro de bipeur invalide (1–30)' });
+  if (clientTrimmed.length > MAX_CLIENT) return res.status(400).json({ error: 'Nom trop long' });
   if (comment && String(comment).length > MAX_COMMENT) return res.status(400).json({ error: 'Commentaire trop long' });
+  if (!pizzas.every(p => typeof p === 'string') || !tapas.every(t => typeof t === 'string'))
+    return res.status(400).json({ error: 'Format invalide' });
   if (pizzas.length && !pizzas.every(p => allowedPizzas.has(p))) return res.status(400).json({ error: 'Pizza invalide' });
   if (tapas.length  && !tapas.every(t => allowedTapas.has(t)))   return res.status(400).json({ error: 'Tapa invalide' });
 
@@ -128,8 +134,8 @@ router.post('/order', requireAuth, async (req, res) => {
 
   const order = {
     id: nextId,
-    timestamp: new Date().toLocaleString('sv-SE', { hour12: false }).replace(' ', 'T').slice(0, 19),
-    client: client ? String(client).trim() : '',
+    timestamp: new Date().toISOString().slice(0, 19),
+    client: clientTrimmed,
     buzzer: buzzer ? Number(buzzer) : null,
     pizzas: pizzas.map(p => String(p).trim()),
     tapas:  tapas.map(t => String(t).trim()),

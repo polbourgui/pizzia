@@ -10,6 +10,7 @@
   <nav class="navbar">
     <span class="logo">PIZZIA</span>
     <div class="nav-links">
+      <span id="sse-dot" class="sse-dot" data-ok="true" title="Connexion active"></span>
       <a href="/" class="btn btn-sm">Commandes</a>
       <a href="/stats.html" class="btn btn-sm">Stats</a>
       <a href="/logout" class="btn btn-sm btn-ghost">Déconnexion</a>
@@ -135,13 +136,12 @@
               <div class="stock-row${epuise ? ' epuise' : ''}">
                 <span class="stock-name">${esc(item)}</span>
                 <div class="stock-controls">
-                  <button class="counter-btn minus" onclick="adjustStock('${esc(item)}',-1)">−</button>
-                  <input class="stock-input" type="number" min="0"
+                  <button class="counter-btn minus" data-item="${esc(item)}" data-delta="-1">−</button>
+                  <input class="stock-input" type="number" min="0" step="1"
                     value="${qty === null || qty === undefined ? '' : qty}"
                     placeholder="∞"
-                    onchange="setStock('${esc(item)}', this.value)"
-                    oninput="setStock('${esc(item)}', this.value)">
-                  <button class="counter-btn plus" onclick="adjustStock('${esc(item)}',+1)">+</button>
+                    data-item="${esc(item)}">
+                  <button class="counter-btn plus" data-item="${esc(item)}" data-delta="1">+</button>
                 </div>
                 ${epuise ? '<span class="epuise-badge">ÉPUISÉ</span>' : ''}
               </div>`;
@@ -150,11 +150,21 @@
       ).join('');
     }
 
-    window.adjustStock = async (item, delta) => {
+    document.getElementById('stocks-grid').addEventListener('click', async e => {
+      const btn = e.target.closest('[data-delta]');
+      if (!btn) return;
+      const item = btn.dataset.item;
+      const delta = Number(btn.dataset.delta);
       const current = stocks[item];
       const base = current === null || current === undefined ? 99 : current;
       await setStock(item, Math.max(0, base + delta));
-    };
+    });
+
+    document.getElementById('stocks-grid').addEventListener('change', async e => {
+      const input = e.target.closest('.stock-input');
+      if (!input) return;
+      await setStock(input.dataset.item, input.value);
+    });
 
     async function init() {
       const [rp, rt] = await Promise.all([fetch('/config-pizzas'), fetch('/config-tapas')]);
@@ -165,9 +175,26 @@
     }
 
     // SSE
+    let sseOk = true;
+    let sseErrorTimer = null;
+
+    function setSseStatus(ok) {
+      if (ok === sseOk) return;
+      sseOk = ok;
+      const dot = document.getElementById('sse-dot');
+      if (dot) { dot.title = ok ? 'Connexion active' : 'Connexion perdue — reconnexion…'; dot.dataset.ok = ok; }
+    }
+
     const evtSource = new EventSource('/events');
-    evtSource.onmessage = (e) => { orders = JSON.parse(e.data); renderOrders(); };
-    evtSource.onerror   = () => console.warn('SSE retry...');
+    evtSource.onmessage = (e) => {
+      clearTimeout(sseErrorTimer);
+      setSseStatus(true);
+      orders = JSON.parse(e.data);
+      renderOrders();
+    };
+    evtSource.onerror = () => {
+      sseErrorTimer = setTimeout(() => setSseStatus(false), 5000);
+    };
 
     setInterval(renderOrders, 60000);
     init();

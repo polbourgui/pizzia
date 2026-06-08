@@ -168,7 +168,6 @@
 
     function attachLongPress(btn, n) {
       let timer = null;
-      let animFrame = null;
       const DURATION = 600;
 
       function start(e) {
@@ -206,8 +205,11 @@
       renderBuzzerGrid();
     }
 
+    let isSubmitting = false;
+
     document.getElementById('order-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (isSubmitting) return;
 
       document.getElementById('identity-error').style.display = 'none';
       document.getElementById('items-error').style.display = 'none';
@@ -231,6 +233,7 @@
       if (client) body.client = client;
       if (buzzer) body.buzzer = Number(buzzer);
 
+      isSubmitting = true;
       const btn = document.getElementById('submit-btn');
       btn.disabled = true;
       btn.classList.add('sending');
@@ -255,6 +258,7 @@
           resetForm();
           setTimeout(() => { banner.style.display = 'none'; }, 4000);
           setTimeout(() => {
+            isSubmitting = false;
             btn.disabled = false;
             btn.classList.remove('sent');
             btn.textContent = 'Envoyer la commande';
@@ -262,12 +266,14 @@
           await loadOrders();
         } else {
           const err = await res.json();
+          isSubmitting = false;
           btn.disabled = false;
           btn.classList.remove('sending');
           btn.textContent = 'Envoyer la commande';
           alert('Erreur : ' + err.error);
         }
       } catch {
+        isSubmitting = false;
         btn.disabled = false;
         btn.classList.remove('sending');
         btn.textContent = 'Envoyer la commande';

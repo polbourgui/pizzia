@@ -59,6 +59,23 @@ body {
   align-items: center;
 }
 
+.sse-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #2d6a4f;
+  display: inline-block;
+  flex-shrink: 0;
+  transition: background 0.3s;
+}
+.sse-dot[data-ok="false"] {
+  background: var(--red);
+  animation: sse-blink 1s ease infinite;
+}
+@keyframes sse-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
 /* ── Buttons ─────────────────────────────── */
 .btn {
   display: inline-flex;
