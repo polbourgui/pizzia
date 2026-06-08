@@ -65,6 +65,18 @@
 
     const quantities = {};
     let activeOrders = [];
+    const freedBuzzers = new Set();
+    const BUZZER_TTL_MS = 60 * 60 * 1000; // 1 heure
+
+    function getUsedBuzzers() {
+      const now = Date.now();
+      return new Set(
+        activeOrders
+          .filter(o => o.buzzer && !freedBuzzers.has(o.buzzer) &&
+                       (now - new Date(o.timestamp).getTime()) < BUZZER_TTL_MS)
+          .map(o => o.buzzer)
+      );
+    }
 
     async function loadOrders() {
       const res = await fetch('/orders');
@@ -124,20 +136,23 @@
     }
 
     function renderBuzzerGrid() {
-      const usedBuzzers = new Set(activeOrders.map(o => o.buzzer).filter(Boolean));
+      const usedBuzzers = getUsedBuzzers();
       const selected = Number(document.getElementById('buzzer').value) || null;
       const grid = document.getElementById('buzzer-grid');
       grid.innerHTML = '';
       for (let i = 1; i <= 30; i++) {
+        const isUsed = usedBuzzers.has(i);
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'buzzer-btn' +
-          (usedBuzzers.has(i) ? ' used' : '') +
+          (isUsed ? ' used' : '') +
           (selected === i ? ' selected' : '');
         btn.textContent = i;
         btn.dataset.num = i;
-        if (!usedBuzzers.has(i)) {
+        if (!isUsed) {
           btn.addEventListener('click', () => toggleBuzzer(i));
+        } else {
+          attachLongPress(btn, i);
         }
         grid.appendChild(btn);
       }
@@ -149,6 +164,35 @@
       input.value = current === n ? '' : n;
       renderBuzzerGrid();
       document.getElementById('identity-error').style.display = 'none';
+    }
+
+    function attachLongPress(btn, n) {
+      let timer = null;
+      let animFrame = null;
+      const DURATION = 600;
+
+      function start(e) {
+        e.preventDefault();
+        btn.classList.add('pressing');
+        btn.style.setProperty('--press-duration', DURATION + 'ms');
+        timer = setTimeout(() => {
+          freedBuzzers.add(n);
+          btn.classList.remove('pressing');
+          btn.classList.add('freed');
+          if (navigator.vibrate) navigator.vibrate(40);
+          setTimeout(() => renderBuzzerGrid(), 350);
+        }, DURATION);
+      }
+
+      function cancel() {
+        clearTimeout(timer);
+        btn.classList.remove('pressing');
+      }
+
+      btn.addEventListener('pointerdown', start);
+      btn.addEventListener('pointerup', cancel);
+      btn.addEventListener('pointerleave', cancel);
+      btn.addEventListener('contextmenu', e => e.preventDefault());
     }
 
     function resetForm() {

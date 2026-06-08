@@ -580,7 +580,37 @@ body {
 }
 .buzzer-btn.used {
   opacity: 0.35;
-  cursor: not-allowed;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+/* barre de progression pendant l'appui long */
+.buzzer-btn.used::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: var(--green-light);
+  border-radius: 0 0 6px 6px;
+  transition: none;
+}
+.buzzer-btn.pressing {
+  opacity: 0.7;
+}
+.buzzer-btn.pressing::after {
+  width: 100%;
+  transition: width var(--press-duration, 600ms) linear;
+}
+
+/* flash vert à la libération */
+@keyframes buzzer-freed {
+  0%   { background: #1b4332; border-color: var(--green); color: var(--green-light); opacity: 1; }
+  100% { background: var(--bg3); border-color: var(--border); color: var(--text); opacity: 1; }
+}
+.buzzer-btn.freed {
+  animation: buzzer-freed 0.35s ease forwards;
 }
 
 /* ── Stats ───────────────────────────────── */
