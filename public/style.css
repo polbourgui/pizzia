@@ -97,6 +97,15 @@ body {
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
 }
 
+@media (min-width: 700px) {
+  .btn-floating {
+    max-width: 420px;
+    bottom: 1.75rem;
+    font-size: 1.05rem;
+    padding: 0.9rem;
+  }
+}
+
 .btn-sm { padding: 0.35rem 0.75rem; font-size: 0.8rem; }
 
 .btn-ghost { background: transparent; border: 1px solid var(--border); }
