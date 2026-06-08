@@ -96,7 +96,7 @@ function printClientBuzzer(printer, client, buzzer) {
     return;
   }
 
-  const buzzerStr = String(buzzer);
+  const buzzerStr = 'Bip ' + String(buzzer);
   // Largeur de buzzerStr en dots à taille ×3 : chaque char = 12*3 = 36 dots
   const buzzerDots = buzzerStr.length * DOTS_PER_CHAR * 3;
   const buzzerPos  = 576 - buzzerDots;
