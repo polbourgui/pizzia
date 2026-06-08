@@ -51,12 +51,6 @@
     let pizzas  = [];
     let tapas   = [];
 
-    function getElapsed(timestamp) {
-      return Math.floor((Date.now() - new Date(timestamp).getTime()) / 60000);
-    }
-    function getAgeClass(m) {
-      return m >= 20 ? 'age-red' : m >= 10 ? 'age-orange' : 'age-neutral';
-    }
     function formatTime(ts) { return ts.replace('T', ' ').slice(0, 16); }
     function esc(s) {
       return String(s ?? '')
@@ -76,8 +70,6 @@
       const sorted = [...orders].sort((a, b) => a.timestamp.localeCompare(b.timestamp));
       countEl.textContent = `${sorted.length} commande${sorted.length > 1 ? 's' : ''}`;
       grid.innerHTML = sorted.map(order => {
-        const minutes = getElapsed(order.timestamp);
-        const ageClass = getAgeClass(minutes);
         const buzzerHtml = order.buzzer
           ? `<div class="order-buzzer">Bipeur <strong>${esc(order.buzzer)}</strong></div>` : '';
         const commentHtml = order.comment
@@ -88,11 +80,10 @@
         const printBadge  = order.printOk === false
           ? `<div class="print-fail-badge">⚠ Non imprimé</div>` : '';
         return `
-          <div class="order-card ${ageClass}">
+          <div class="order-card">
             <div class="card-header">
               <span class="order-num">#${esc(order.id)}</span>
               <span class="order-time">${formatTime(order.timestamp)}</span>
-              <span class="order-elapsed">${minutes} min</span>
             </div>
             ${printBadge}
             <div class="order-client">${esc(order.client)}</div>
@@ -241,7 +232,6 @@
       sseErrorTimer = setTimeout(() => setSseStatus(false), 5000);
     };
 
-    setInterval(renderOrders, 60000);
     init();
   </script>
   <script src="theme.js"></script>

@@ -429,8 +429,6 @@ body {
   transition: border-color 0.3s;
 }
 
-.order-card.age-orange { border-color: var(--orange); }
-.order-card.age-red    { border-color: var(--red); background: #2a1a1a; }
 
 .card-header {
   display: flex;
@@ -451,16 +449,6 @@ body {
   flex: 1;
 }
 
-.order-elapsed {
-  font-size: 0.78rem;
-  font-weight: 700;
-  padding: 0.15rem 0.45rem;
-  border-radius: 12px;
-  background: var(--bg);
-}
-
-.age-orange .order-elapsed { color: var(--orange); }
-.age-red    .order-elapsed { color: var(--red); }
 
 .order-client {
   font-size: 1.15rem;
@@ -818,9 +806,6 @@ body {
 /* ── Light mode overrides ────────────────── */
 [data-theme="light"] .pizza-counter.active {
   background: #fff0e0;
-}
-[data-theme="light"] .order-card.age-red {
-  background: #fdecea;
 }
 [data-theme="light"] .btn-send,
 [data-theme="light"] .btn-send.sent {
