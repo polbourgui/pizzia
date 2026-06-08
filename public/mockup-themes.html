@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>PIZZIA — Comparaison palettes dark</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #0a0a0a;
+      color: #f0f0f0;
+      padding: 2rem 1rem 4rem;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1rem;
+      color: #555;
+      margin-bottom: 0.5rem;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #444;
+      margin-bottom: 3rem;
+    }
+
+    .themes-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2.5rem;
+      align-items: flex-start;
+    }
+
+    .theme-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .theme-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #555;
+    }
+    .theme-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #888;
+      margin-bottom: 0.1rem;
+    }
+    .theme-current {
+      font-size: 0.65rem;
+      color: #444;
+      font-style: italic;
+    }
+
+    /* Phone frame */
+    .phone {
+      width: 300px;
+      height: 620px;
+      border: 5px solid #2a2a2a;
+      border-radius: 32px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.7), inset 0 0 0 1px #333;
+    }
+    .phone::before {
+      content: '';
+      position: absolute;
+      top: 9px; left: 50%;
+      transform: translateX(-50%);
+      width: 50px; height: 5px;
+      background: #222;
+      border-radius: 3px;
+      z-index: 10;
+    }
+
+    /* App shell */
+    .app {
+      width: 100%; height: 100%;
+      overflow-y: auto; overflow-x: hidden;
+      scrollbar-width: none;
+      font-size: 12px;
+    }
+    .app::-webkit-scrollbar { display: none; }
+
+    /* ── Themes ────────────────────────────────── */
+
+    /* ACTUELLE */
+    .t-current {
+      --bg:     #1a1a1a;
+      --bg2:    #242424;
+      --bg3:    #2e2e2e;
+      --border: #3a3a3a;
+      --text:   #f0f0f0;
+      --muted:  #999;
+      --primary:#e85d04;
+      --green:  #2d6a4f;
+      --green-l:#95d5b2;
+      --red:    #e63946;
+      --orange: #f4a261;
+    }
+
+    /* A — Ardoise bleue */
+    .t-a {
+      --bg:     #0f1923;
+      --bg2:    #1a2535;
+      --bg3:    #243040;
+      --border: #2e4060;
+      --text:   #e8edf2;
+      --muted:  #7a90a8;
+      --primary:#e85d04;
+      --green:  #2d6a4f;
+      --green-l:#95d5b2;
+      --red:    #e05060;
+      --orange: #f4a261;
+    }
+
+    /* B — Brun chaud */
+    .t-b {
+      --bg:     #1a1410;
+      --bg2:    #241c16;
+      --bg3:    #2e2418;
+      --border: #3d3028;
+      --text:   #f0e8d8;
+      --muted:  #9a8878;
+      --primary:#e85d04;
+      --green:  #2d6a4f;
+      --green-l:#95d5b2;
+      --red:    #e05060;
+      --orange: #f4a261;
+    }
+
+    /* C — Vert ardoise */
+    .t-c {
+      --bg:     #111a16;
+      --bg2:    #192420;
+      --bg3:    #21302a;
+      --border: #2d4038;
+      --text:   #dff0e8;
+      --muted:  #7aa88a;
+      --primary:#e85d04;
+      --green:  #2d7a50;
+      --green-l:#a8dfc0;
+      --red:    #e05060;
+      --orange: #f4a261;
+    }
+
+    /* D — Anthracite contrasté */
+    .t-d {
+      --bg:     #141414;
+      --bg2:    #1e1e1e;
+      --bg3:    #282828;
+      --border: #404040;
+      --text:   #f5f5f5;
+      --muted:  #aaaaaa;
+      --primary:#e85d04;
+      --green:  #2d6a4f;
+      --green-l:#95d5b2;
+      --red:    #e63946;
+      --orange: #f4a261;
+    }
+
+    /* ── App components ──────────────────────── */
+    .navbar {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.5rem 0.85rem;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 1rem; font-weight: 800; color: var(--primary); letter-spacing: 2px; }
+    .nav-links { display: flex; gap: 0.35rem; align-items: center; }
+    .nav-btn {
+      background: var(--bg3);
+      border: none; border-radius: 5px;
+      color: var(--text); padding: 0.25rem 0.5rem;
+      font-size: 0.65rem; font-weight: 600;
+    }
+    .nav-btn.ghost { background: transparent; border: 1px solid var(--border); }
+    .sse-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--green); display: inline-block;
+    }
+
+    .cont {
+      background: var(--bg);
+      padding: 0.85rem;
+      min-height: calc(100% - 36px);
+    }
+
+    .page-title {
+      font-size: 1rem; font-weight: 700;
+      color: var(--text); margin-bottom: 0.85rem;
+    }
+    .count-badge {
+      background: var(--primary); color: #fff;
+      border-radius: 20px; padding: 0.1rem 0.45rem;
+      font-size: 0.65rem; font-weight: 700;
+    }
+    .kitchen-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.85rem; }
+
+    /* order cards */
+    .orders-grid { display: flex; flex-direction: column; gap: 0.6rem; }
+
+    .order-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.65rem 0.75rem;
+    }
+    .card-head { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.35rem; }
+    .onum { font-weight: 800; font-size: 0.88rem; color: var(--primary); }
+    .otime { font-size: 0.62rem; color: var(--muted); flex: 1; }
+    .oclient { font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+    .obuzzer { font-size: 0.68rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .oitems { font-size: 0.75rem; line-height: 1.7; color: var(--text); }
+    .oitems span::before { content: '• '; color: var(--primary); }
+    .oitems span.tapa::before { content: '◦ '; color: var(--orange); }
+    .ocomment {
+      font-size: 0.68rem; color: var(--orange); font-style: italic;
+      margin-top: 0.3rem; padding-top: 0.3rem;
+      border-top: 1px solid var(--border);
+    }
+    .reprint {
+      margin-top: 0.45rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px; color: var(--muted);
+      font-size: 0.62rem; padding: 0.2rem 0.4rem;
+      width: 100%; text-align: center;
+    }
+    .print-fail-badge {
+      background: #7c3a00; color: #ffd8a8;
+      border-radius: 3px; padding: 0.15rem 0.4rem;
+      font-size: 0.65rem; font-weight: 700;
+      margin-bottom: 0.3rem; display: inline-block;
+    }
+
+    /* form elements (commande page) */
+    .form-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 0.75rem;
+      margin-bottom: 0.65rem;
+    }
+    .field-label {
+      font-size: 0.62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .05em;
+      color: var(--muted); margin-bottom: 0.3rem; display: block;
+    }
+    .fake-input {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.4rem 0.55rem;
+      color: var(--muted); font-size: 0.75rem; width: 100%;
+      margin-bottom: 0.65rem;
+    }
+    .section-label {
+      font-size: 0.62rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .05em;
+      color: var(--muted); margin-bottom: 0.3rem; display: block;
+    }
+    .buzzer-grid { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.2rem; }
+    .bz {
+      width: 32px; height: 32px; border-radius: 5px;
+      border: 2px solid var(--border); background: var(--bg3);
+      color: var(--text); font-size: 0.7rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bz.used { opacity: 0.3; }
+    .bz.sel { border-color: var(--green); background: #1b4332; color: var(--green-l); }
+    .pizza-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; margin-top: 0.2rem; }
+    .pizza-card {
+      background: var(--bg3); border: 2px solid var(--border);
+      border-radius: 6px; padding: 0.4rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.3rem;
+    }
+    .pizza-card.active { border-color: var(--primary); background: #2a1a0a; }
+    .pizza-name { font-size: 0.68rem; font-weight: 600; text-align: center; color: var(--text); }
+    .counter-row { display: flex; align-items: center; gap: 0.3rem; }
+    .cbtn {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 1px solid var(--border); background: var(--bg);
+      color: var(--text); font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cval { font-size: 0.82rem; font-weight: 700; min-width: 0.9rem; text-align: center; color: var(--muted); }
+    .pizza-card.active .cval { color: var(--primary); }
+    .btn-send {
+      background: var(--green); color: #fff; border: none;
+      border-radius: 7px; width: 100%; padding: 0.6rem;
+      font-size: 0.85rem; font-weight: 700; text-align: center;
+      margin-top: 0.5rem;
+    }
+
+    /* swatches */
+    .swatches {
+      display: flex; gap: 0.3rem; margin-top: 0.4rem; justify-content: center;
+    }
+    .swatch {
+      width: 16px; height: 16px; border-radius: 3px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    /* tab selector */
+    .tab-bar {
+      display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 1.5rem;
+    }
+    .tab-btn {
+      background: #1a1a1a; border: 1px solid #333; border-radius: 6px;
+      color: #888; padding: 0.4rem 1rem; font-size: 0.75rem; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .tab-btn.active { background: #333; color: #fff; border-color: #555; }
+
+    .view { display: none; }
+    .view.active { display: block; }
+  </style>
+</head>
+<body>
+
+<h1>PIZZIA — Palettes dark</h1>
+<p class="subtitle">Cliquer sur "Commande" ou "Cuisine" pour changer la vue</p>
+
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="setView('cuisine')">Vue Cuisine</button>
+  <button class="tab-btn" onclick="setView('commande')">Vue Commande</button>
+</div>
+
+<!-- ══════════════════════════════════════════
+     VUE CUISINE
+══════════════════════════════════════════ -->
+<div id="view-cuisine" class="view active">
+  <div class="themes-row">
+
+    <!-- ACTUELLE -->
+    <div class="theme-wrap">
+      <div class="theme-name">Actuelle</div>
+      <div class="theme-current">gris neutre</div>
+      <div class="swatches">
+        <div class="swatch" style="background:#1a1a1a"></div>
+        <div class="swatch" style="background:#242424"></div>
+        <div class="swatch" style="background:#2e2e2e"></div>
+        <div class="swatch" style="background:#3a3a3a"></div>
+        <div class="swatch" style="background:#f0f0f0"></div>
+      </div>
+      <div class="phone">
+        <div class="app t-current">
+          <div class="navbar">
+            <span class="logo">PIZZIA</span>
+            <div class="nav-links">
+              <span class="sse-dot"></span>
+              <button class="nav-btn">Cmds</button>
+              <button class="nav-btn">Stats</button>
+              <button class="nav-btn ghost">☀️</button>
+            </div>
+          </div>
+          <div class="cont">
+            <div class="kitchen-head">
+              <div class="page-title" style="margin:0">Cuisine</div>
+              <span class="count-badge">3 commandes</span>
+            </div>
+            <div class="orders-grid">
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#14</span>
+                  <span class="otime">14:32</span>
+                </div>
+                <div class="oclient">Martin</div>
+                <div class="obuzzer">Bipeur <strong>3</strong></div>
+                <div class="oitems">
+                  <span>Margherita</span><br>
+                  <span>Margherita</span><br>
+                  <span>Napolitaine</span>
+                </div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#13</span>
+                  <span class="otime">14:19</span>
+                </div>
+                <div class="print-fail-badge">⚠ Non imprimé</div>
+                <div class="oclient">Sophie</div>
+                <div class="oitems">
+                  <span>Regina</span><br>
+                  <span class="tapa">Bruschetta</span>
+                </div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#12</span>
+                  <span class="otime">14:05</span>
+                </div>
+                <div class="oclient">Dupont</div>
+                <div class="oitems">
+                  <span>4 Fromages</span><br>
+                  <span>4 Fromages</span>
+                </div>
+                <div class="ocomment">Note : extra fromage</div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- A — ARDOISE BLEUE -->
+    <div class="theme-wrap">
+      <div class="theme-name">A — Ardoise bleue</div>
+      <div class="theme-current">bleu-gris foncé</div>
+      <div class="swatches">
+        <div class="swatch" style="background:#0f1923"></div>
+        <div class="swatch" style="background:#1a2535"></div>
+        <div class="swatch" style="background:#243040"></div>
+        <div class="swatch" style="background:#2e4060"></div>
+        <div class="swatch" style="background:#e8edf2"></div>
+      </div>
+      <div class="phone">
+        <div class="app t-a">
+          <div class="navbar">
+            <span class="logo">PIZZIA</span>
+            <div class="nav-links">
+              <span class="sse-dot"></span>
+              <button class="nav-btn">Cmds</button>
+              <button class="nav-btn">Stats</button>
+              <button class="nav-btn ghost">☀️</button>
+            </div>
+          </div>
+          <div class="cont">
+            <div class="kitchen-head">
+              <div class="page-title" style="margin:0">Cuisine</div>
+              <span class="count-badge">3 commandes</span>
+            </div>
+            <div class="orders-grid">
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#14</span>
+                  <span class="otime">14:32</span>
+                </div>
+                <div class="oclient">Martin</div>
+                <div class="obuzzer">Bipeur <strong>3</strong></div>
+                <div class="oitems">
+                  <span>Margherita</span><br>
+                  <span>Margherita</span><br>
+                  <span>Napolitaine</span>
+                </div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#13</span>
+                  <span class="otime">14:19</span>
+                </div>
+                <div class="print-fail-badge">⚠ Non imprimé</div>
+                <div class="oclient">Sophie</div>
+                <div class="oitems">
+                  <span>Regina</span><br>
+                  <span class="tapa">Bruschetta</span>
+                </div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#12</span>
+                  <span class="otime">14:05</span>
+                </div>
+                <div class="oclient">Dupont</div>
+                <div class="oitems">
+                  <span>4 Fromages</span><br>
+                  <span>4 Fromages</span>
+                </div>
+                <div class="ocomment">Note : extra fromage</div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B — BRUN CHAUD -->
+    <div class="theme-wrap">
+      <div class="theme-name">B — Brun chaud</div>
+      <div class="theme-current">pierre / four</div>
+      <div class="swatches">
+        <div class="swatch" style="background:#1a1410"></div>
+        <div class="swatch" style="background:#241c16"></div>
+        <div class="swatch" style="background:#2e2418"></div>
+        <div class="swatch" style="background:#3d3028"></div>
+        <div class="swatch" style="background:#f0e8d8"></div>
+      </div>
+      <div class="phone">
+        <div class="app t-b">
+          <div class="navbar">
+            <span class="logo">PIZZIA</span>
+            <div class="nav-links">
+              <span class="sse-dot"></span>
+              <button class="nav-btn">Cmds</button>
+              <button class="nav-btn">Stats</button>
+              <button class="nav-btn ghost">☀️</button>
+            </div>
+          </div>
+          <div class="cont">
+            <div class="kitchen-head">
+              <div class="page-title" style="margin:0">Cuisine</div>
+              <span class="count-badge">3 commandes</span>
+            </div>
+            <div class="orders-grid">
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#14</span>
+                  <span class="otime">14:32</span>
+                </div>
+                <div class="oclient">Martin</div>
+                <div class="obuzzer">Bipeur <strong>3</strong></div>
+                <div class="oitems">
+                  <span>Margherita</span><br>
+                  <span>Margherita</span><br>
+                  <span>Napolitaine</span>
+                </div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#13</span>
+                  <span class="otime">14:19</span>
+                </div>
+                <div class="print-fail-badge">⚠ Non imprimé</div>
+                <div class="oclient">Sophie</div>
+                <div class="oitems">
+                  <span>Regina</span><br>
+                  <span class="tapa">Bruschetta</span>
+                </div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#12</span>
+                  <span class="otime">14:05</span>
+                </div>
+                <div class="oclient">Dupont</div>
+                <div class="oitems">
+                  <span>4 Fromages</span><br>
+                  <span>4 Fromages</span>
+                </div>
+                <div class="ocomment">Note : extra fromage</div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C — VERT ARDOISE -->
+    <div class="theme-wrap">
+      <div class="theme-name">C — Vert ardoise</div>
+      <div class="theme-current">caisse rétro</div>
+      <div class="swatches">
+        <div class="swatch" style="background:#111a16"></div>
+        <div class="swatch" style="background:#192420"></div>
+        <div class="swatch" style="background:#21302a"></div>
+        <div class="swatch" style="background:#2d4038"></div>
+        <div class="swatch" style="background:#dff0e8"></div>
+      </div>
+      <div class="phone">
+        <div class="app t-c">
+          <div class="navbar">
+            <span class="logo">PIZZIA</span>
+            <div class="nav-links">
+              <span class="sse-dot"></span>
+              <button class="nav-btn">Cmds</button>
+              <button class="nav-btn">Stats</button>
+              <button class="nav-btn ghost">☀️</button>
+            </div>
+          </div>
+          <div class="cont">
+            <div class="kitchen-head">
+              <div class="page-title" style="margin:0">Cuisine</div>
+              <span class="count-badge">3 commandes</span>
+            </div>
+            <div class="orders-grid">
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#14</span>
+                  <span class="otime">14:32</span>
+                </div>
+                <div class="oclient">Martin</div>
+                <div class="obuzzer">Bipeur <strong>3</strong></div>
+                <div class="oitems">
+                  <span>Margherita</span><br>
+                  <span>Margherita</span><br>
+                  <span>Napolitaine</span>
+                </div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#13</span>
+                  <span class="otime">14:19</span>
+                </div>
+                <div class="print-fail-badge">⚠ Non imprimé</div>
+                <div class="oclient">Sophie</div>
+                <div class="oitems">
+                  <span>Regina</span><br>
+                  <span class="tapa">Bruschetta</span>
+                </div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#12</span>
+                  <span class="otime">14:05</span>
+                </div>
+                <div class="oclient">Dupont</div>
+                <div class="oitems">
+                  <span>4 Fromages</span><br>
+                  <span>4 Fromages</span>
+                </div>
+                <div class="ocomment">Note : extra fromage</div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- D — ANTHRACITE -->
+    <div class="theme-wrap">
+      <div class="theme-name">D — Anthracite</div>
+      <div class="theme-current">gris contrasté</div>
+      <div class="swatches">
+        <div class="swatch" style="background:#141414"></div>
+        <div class="swatch" style="background:#1e1e1e"></div>
+        <div class="swatch" style="background:#282828"></div>
+        <div class="swatch" style="background:#404040"></div>
+        <div class="swatch" style="background:#f5f5f5"></div>
+      </div>
+      <div class="phone">
+        <div class="app t-d">
+          <div class="navbar">
+            <span class="logo">PIZZIA</span>
+            <div class="nav-links">
+              <span class="sse-dot"></span>
+              <button class="nav-btn">Cmds</button>
+              <button class="nav-btn">Stats</button>
+              <button class="nav-btn ghost">☀️</button>
+            </div>
+          </div>
+          <div class="cont">
+            <div class="kitchen-head">
+              <div class="page-title" style="margin:0">Cuisine</div>
+              <span class="count-badge">3 commandes</span>
+            </div>
+            <div class="orders-grid">
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#14</span>
+                  <span class="otime">14:32</span>
+                </div>
+                <div class="oclient">Martin</div>
+                <div class="obuzzer">Bipeur <strong>3</strong></div>
+                <div class="oitems">
+                  <span>Margherita</span><br>
+                  <span>Margherita</span><br>
+                  <span>Napolitaine</span>
+                </div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#13</span>
+                  <span class="otime">14:19</span>
+                </div>
+                <div class="print-fail-badge">⚠ Non imprimé</div>
+                <div class="oclient">Sophie</div>
+                <div class="oitems">
+                  <span>Regina</span><br>
+                  <span class="tapa">Bruschetta</span>
+                </div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+              <div class="order-card">
+                <div class="card-head">
+                  <span class="onum">#12</span>
+                  <span class="otime">14:05</span>
+                </div>
+                <div class="oclient">Dupont</div>
+                <div class="oitems">
+                  <span>4 Fromages</span><br>
+                  <span>4 Fromages</span>
+                </div>
+                <div class="ocomment">Note : extra fromage</div>
+                <div class="reprint">Réimprimer</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     VUE COMMANDE
+══════════════════════════════════════════ -->
+<div id="view-commande" class="view">
+  <div class="themes-row">
+
+    <!-- ACTUELLE -->
+    <div class="theme-wrap">
+      <div class="theme-name">Actuelle</div>
+      <div class="theme-current">gris neutre</div>
+      <div class="swatches">
+        <div class="swatch" style="background:#1a1a1a"></div>
+        <div class="swatch" style="background:#242424"></div>
+        <div class="swatch" style="background:#2e2e2e"></div>
+        <div class="swatch" style="background:#3a3a3a"></div>
+        <div class="swatch" style="background:#f0f0f0"></div>
+      </div>
+      <div class="phone">
+        <div class="app t-current">
+          <div class="navbar">
+            <span class="logo">PIZZIA</span>
+            <div class="nav-links">
+              <button class="nav-btn">Cuisine</button>
+              <button class="nav-btn">Stats</button>
+              <button class="nav-btn ghost">←</button>
+            </div>
+          </div>
+          <div class="cont">
+            <div class="page-title">Nouvelle commande</div>
+            <div class="form-card">
+              <span class="field-label">Nom du client</span>
+              <div class="fake-input">Martin</div>
+              <span class="field-label">Bipeur</span>
+              <div class="buzzer-grid">
+                <div class="bz used">1</div><div class="bz used">2</div>
+                <div class="bz sel">3</div><div class="bz">4</div>
+                <div class="bz">5</div><div class="bz used">6</div>
+                <div class="bz">7</div><div class="bz">8</div>
+                <div class="bz">9</div><div class="bz">10</div>
+              </div>
+            </div>
+            <div class="form-card">
+              <span class="section-label">🍕 Pizzas</span>
+              <div class="pizza-grid">
+                <div class="pizza-card active">
+                  <span class="pizza-name">Margherita</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div>
+                    <span class="cval" style="color:var(--primary)">2</span>
+                    <div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card">
+                  <span class="pizza-name">Regina</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card active">
+                  <span class="pizza-name">Napolitaine</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div>
+                    <span class="cval" style="color:var(--primary)">1</span>
+                    <div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card">
+                  <span class="pizza-name">4 Fromages</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="btn-send">Envoyer la commande</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- A -->
+    <div class="theme-wrap">
+      <div class="theme-name">A — Ardoise bleue</div>
+      <div class="theme-current">bleu-gris foncé</div>
+      <div class="swatches">
+        <div class="swatch" style="background:#0f1923"></div>
+        <div class="swatch" style="background:#1a2535"></div>
+        <div class="swatch" style="background:#243040"></div>
+        <div class="swatch" style="background:#2e4060"></div>
+        <div class="swatch" style="background:#e8edf2"></div>
+      </div>
+      <div class="phone">
+        <div class="app t-a">
+          <div class="navbar">
+            <span class="logo">PIZZIA</span>
+            <div class="nav-links">
+              <button class="nav-btn">Cuisine</button>
+              <button class="nav-btn">Stats</button>
+              <button class="nav-btn ghost">←</button>
+            </div>
+          </div>
+          <div class="cont">
+            <div class="page-title">Nouvelle commande</div>
+            <div class="form-card">
+              <span class="field-label">Nom du client</span>
+              <div class="fake-input">Martin</div>
+              <span class="field-label">Bipeur</span>
+              <div class="buzzer-grid">
+                <div class="bz used">1</div><div class="bz used">2</div>
+                <div class="bz sel">3</div><div class="bz">4</div>
+                <div class="bz">5</div><div class="bz used">6</div>
+                <div class="bz">7</div><div class="bz">8</div>
+                <div class="bz">9</div><div class="bz">10</div>
+              </div>
+            </div>
+            <div class="form-card">
+              <span class="section-label">🍕 Pizzas</span>
+              <div class="pizza-grid">
+                <div class="pizza-card active">
+                  <span class="pizza-name">Margherita</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div>
+                    <span class="cval" style="color:var(--primary)">2</span>
+                    <div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card">
+                  <span class="pizza-name">Regina</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card active">
+                  <span class="pizza-name">Napolitaine</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div>
+                    <span class="cval" style="color:var(--primary)">1</span>
+                    <div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card">
+                  <span class="pizza-name">4 Fromages</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="btn-send">Envoyer la commande</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- B -->
+    <div class="theme-wrap">
+      <div class="theme-name">B — Brun chaud</div>
+      <div class="theme-current">pierre / four</div>
+      <div class="swatches">
+        <div class="swatch" style="background:#1a1410"></div>
+        <div class="swatch" style="background:#241c16"></div>
+        <div class="swatch" style="background:#2e2418"></div>
+        <div class="swatch" style="background:#3d3028"></div>
+        <div class="swatch" style="background:#f0e8d8"></div>
+      </div>
+      <div class="phone">
+        <div class="app t-b">
+          <div class="navbar">
+            <span class="logo">PIZZIA</span>
+            <div class="nav-links">
+              <button class="nav-btn">Cuisine</button>
+              <button class="nav-btn">Stats</button>
+              <button class="nav-btn ghost">←</button>
+            </div>
+          </div>
+          <div class="cont">
+            <div class="page-title">Nouvelle commande</div>
+            <div class="form-card">
+              <span class="field-label">Nom du client</span>
+              <div class="fake-input">Martin</div>
+              <span class="field-label">Bipeur</span>
+              <div class="buzzer-grid">
+                <div class="bz used">1</div><div class="bz used">2</div>
+                <div class="bz sel">3</div><div class="bz">4</div>
+                <div class="bz">5</div><div class="bz used">6</div>
+                <div class="bz">7</div><div class="bz">8</div>
+                <div class="bz">9</div><div class="bz">10</div>
+              </div>
+            </div>
+            <div class="form-card">
+              <span class="section-label">🍕 Pizzas</span>
+              <div class="pizza-grid">
+                <div class="pizza-card active">
+                  <span class="pizza-name">Margherita</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div>
+                    <span class="cval" style="color:var(--primary)">2</span>
+                    <div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card">
+                  <span class="pizza-name">Regina</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card active">
+                  <span class="pizza-name">Napolitaine</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div>
+                    <span class="cval" style="color:var(--primary)">1</span>
+                    <div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card">
+                  <span class="pizza-name">4 Fromages</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="btn-send">Envoyer la commande</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C -->
+    <div class="theme-wrap">
+      <div class="theme-name">C — Vert ardoise</div>
+      <div class="theme-current">caisse rétro</div>
+      <div class="swatches">
+        <div class="swatch" style="background:#111a16"></div>
+        <div class="swatch" style="background:#192420"></div>
+        <div class="swatch" style="background:#21302a"></div>
+        <div class="swatch" style="background:#2d4038"></div>
+        <div class="swatch" style="background:#dff0e8"></div>
+      </div>
+      <div class="phone">
+        <div class="app t-c">
+          <div class="navbar">
+            <span class="logo">PIZZIA</span>
+            <div class="nav-links">
+              <button class="nav-btn">Cuisine</button>
+              <button class="nav-btn">Stats</button>
+              <button class="nav-btn ghost">←</button>
+            </div>
+          </div>
+          <div class="cont">
+            <div class="page-title">Nouvelle commande</div>
+            <div class="form-card">
+              <span class="field-label">Nom du client</span>
+              <div class="fake-input">Martin</div>
+              <span class="field-label">Bipeur</span>
+              <div class="buzzer-grid">
+                <div class="bz used">1</div><div class="bz used">2</div>
+                <div class="bz sel">3</div><div class="bz">4</div>
+                <div class="bz">5</div><div class="bz used">6</div>
+                <div class="bz">7</div><div class="bz">8</div>
+                <div class="bz">9</div><div class="bz">10</div>
+              </div>
+            </div>
+            <div class="form-card">
+              <span class="section-label">🍕 Pizzas</span>
+              <div class="pizza-grid">
+                <div class="pizza-card active">
+                  <span class="pizza-name">Margherita</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div>
+                    <span class="cval" style="color:var(--primary)">2</span>
+                    <div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card">
+                  <span class="pizza-name">Regina</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card active">
+                  <span class="pizza-name">Napolitaine</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div>
+                    <span class="cval" style="color:var(--primary)">1</span>
+                    <div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card">
+                  <span class="pizza-name">4 Fromages</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="btn-send">Envoyer la commande</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- D -->
+    <div class="theme-wrap">
+      <div class="theme-name">D — Anthracite</div>
+      <div class="theme-current">gris contrasté</div>
+      <div class="swatches">
+        <div class="swatch" style="background:#141414"></div>
+        <div class="swatch" style="background:#1e1e1e"></div>
+        <div class="swatch" style="background:#282828"></div>
+        <div class="swatch" style="background:#404040"></div>
+        <div class="swatch" style="background:#f5f5f5"></div>
+      </div>
+      <div class="phone">
+        <div class="app t-d">
+          <div class="navbar">
+            <span class="logo">PIZZIA</span>
+            <div class="nav-links">
+              <button class="nav-btn">Cuisine</button>
+              <button class="nav-btn">Stats</button>
+              <button class="nav-btn ghost">←</button>
+            </div>
+          </div>
+          <div class="cont">
+            <div class="page-title">Nouvelle commande</div>
+            <div class="form-card">
+              <span class="field-label">Nom du client</span>
+              <div class="fake-input">Martin</div>
+              <span class="field-label">Bipeur</span>
+              <div class="buzzer-grid">
+                <div class="bz used">1</div><div class="bz used">2</div>
+                <div class="bz sel">3</div><div class="bz">4</div>
+                <div class="bz">5</div><div class="bz used">6</div>
+                <div class="bz">7</div><div class="bz">8</div>
+                <div class="bz">9</div><div class="bz">10</div>
+              </div>
+            </div>
+            <div class="form-card">
+              <span class="section-label">🍕 Pizzas</span>
+              <div class="pizza-grid">
+                <div class="pizza-card active">
+                  <span class="pizza-name">Margherita</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div>
+                    <span class="cval" style="color:var(--primary)">2</span>
+                    <div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card">
+                  <span class="pizza-name">Regina</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card active">
+                  <span class="pizza-name">Napolitaine</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div>
+                    <span class="cval" style="color:var(--primary)">1</span>
+                    <div class="cbtn">+</div>
+                  </div>
+                </div>
+                <div class="pizza-card">
+                  <span class="pizza-name">4 Fromages</span>
+                  <div class="counter-row">
+                    <div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="btn-send">Envoyer la commande</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  function setView(v) {
+    document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('view-' + v).classList.add('active');
+    event.target.classList.add('active');
+  }
+</script>
+
+</body>
+</html>
