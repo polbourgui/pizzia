@@ -19,6 +19,25 @@
   --shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 
+/* ── Light mode (palette chaude) ─────────── */
+[data-theme="light"] {
+  --bg:           #faf7f2;
+  --bg2:          #ffffff;
+  --bg3:          #f0ece3;
+  --border:       #d6d0c4;
+  --text:         #1c1a16;
+  --text-muted:   #7a7060;
+  --primary:      #c94e00;
+  --primary-hover:#e05500;
+  --danger:       #a8101b;
+  --success:      #d6ede2;
+  --success-text: #1a4a35;
+  --orange:       #c97a30;
+  --red:          #c0303a;
+  --neutral-card: #ffffff;
+  --shadow:       0 2px 8px rgba(0,0,0,0.09);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -699,6 +718,38 @@ body {
   min-width: 2rem;
   text-align: right;
 }
+
+/* ── Light mode overrides ────────────────── */
+[data-theme="light"] .pizza-counter.active {
+  background: #fff0e0;
+}
+[data-theme="light"] .order-card.age-red {
+  background: #fdecea;
+}
+[data-theme="light"] .btn-send,
+[data-theme="light"] .btn-send.sent {
+  background: #1f5c3a;
+  color: #fff;
+}
+[data-theme="light"] .btn-send:hover { background: #174d30; }
+[data-theme="light"] .btn-send.sending { background: #174d30; }
+[data-theme="light"] .buzzer-btn.selected {
+  background: #d6ede2;
+  color: #1a4a35;
+  border-color: #1f5c3a;
+}
+[data-theme="light"] .buzzer-btn.pressing::after { background: #1f5c3a; }
+[data-theme="light"] .stat-badge-units {
+  background: #d6ede2;
+  border-color: #1f5c3a;
+  color: #1a4a35;
+}
+[data-theme="light"] .stocks-panel {
+  background: var(--bg2);
+}
+[data-theme="light"] .pin-digit:focus { border-color: var(--primary); }
+[data-theme="light"] .logo { color: var(--primary); }
+[data-theme="light"] .order-num { color: var(--primary); }
 
 /* ── Responsive ──────────────────────────── */
 @media (max-width: 600px) {

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>PIZZIA — Cuisine</title>
   <link rel="stylesheet" href="style.css">
+  <script>(function(){var s=localStorage.getItem('pizzia-theme');document.documentElement.dataset.theme=s||(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark');})()</script>
 </head>
 <body>
   <nav class="navbar">
@@ -13,6 +14,7 @@
       <span id="sse-dot" class="sse-dot" data-ok="true" title="Connexion active"></span>
       <a href="/" class="btn btn-sm">Commandes</a>
       <a href="/stats.html" class="btn btn-sm">Stats</a>
+      <button id="theme-toggle" class="btn btn-sm btn-ghost" onclick="window.__themeToggle()" title="Changer le thème"></button>
       <a href="/logout" class="btn btn-sm btn-ghost">Déconnexion</a>
     </div>
   </nav>
@@ -199,5 +201,6 @@
     setInterval(renderOrders, 60000);
     init();
   </script>
+  <script src="theme.js"></script>
 </body>
 </html>
