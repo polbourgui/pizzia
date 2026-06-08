@@ -1,12 +1,12 @@
 /* PIZZIA — Global Styles */
 
 :root {
-  --bg: #1a1a1a;
-  --bg2: #242424;
-  --bg3: #2e2e2e;
-  --border: #3a3a3a;
-  --text: #f0f0f0;
-  --text-muted: #999;
+  --bg: #1a1410;
+  --bg2: #241c16;
+  --bg3: #2e2418;
+  --border: #3d3028;
+  --text: #f0e8d8;
+  --text-muted: #9a8878;
   --primary: #e85d04;
   --primary-hover: #f48c06;
   --danger: #c1121f;
@@ -14,9 +14,9 @@
   --success-text: #95d5b2;
   --orange: #f4a261;
   --red: #e63946;
-  --neutral-card: #2e2e2e;
+  --neutral-card: #2e2418;
   --radius: 8px;
-  --shadow: 0 2px 8px rgba(0,0,0,0.4);
+  --shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
 
 /* ── Light mode (palette chaude) ─────────── */
