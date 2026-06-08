@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>PIZZIA — Mockups</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: #111;
+      color: #f0f0f0;
+      padding: 2rem 1rem;
+    }
+    h1 { text-align: center; font-size: 1.2rem; color: #999; margin-bottom: 2.5rem; letter-spacing: 2px; text-transform: uppercase; }
+    .section-title {
+      text-align: center;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #555;
+      margin-bottom: 1.5rem;
+      margin-top: 3rem;
+    }
+
+    /* ── Device frames ─────────────────── */
+    .devices-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 3rem;
+      align-items: flex-start;
+    }
+
+    .device-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .device-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #555;
+    }
+
+    /* Smartphone */
+    .phone-frame {
+      width: 320px;
+      height: 660px;
+      background: #1a1a1a;
+      border: 6px solid #333;
+      border-radius: 36px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 0 1px #444;
+    }
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 10px; left: 50%;
+      transform: translateX(-50%);
+      width: 60px; height: 6px;
+      background: #333;
+      border-radius: 3px;
+      z-index: 10;
+    }
+
+    /* Tablet horizontal */
+    .tablet-frame {
+      width: 780px;
+      height: 540px;
+      background: #1a1a1a;
+      border: 8px solid #333;
+      border-radius: 20px;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.8), inset 0 0 0 1px #444;
+    }
+    .tablet-frame::before {
+      content: '';
+      position: absolute;
+      top: 50%; right: 8px;
+      transform: translateY(-50%);
+      width: 4px; height: 40px;
+      background: #333;
+      border-radius: 2px;
+      z-index: 10;
+    }
+
+    /* ── App chrome ────────────────────── */
+    :root {
+      --bg: #1a1a1a;
+      --bg2: #242424;
+      --bg3: #2e2e2e;
+      --border: #3a3a3a;
+      --text: #f0f0f0;
+      --muted: #999;
+      --primary: #e85d04;
+      --green: #2d6a4f;
+      --green-light: #95d5b2;
+      --radius: 7px;
+      --orange: #f4a261;
+      --red: #e63946;
+    }
+
+    .app {
+      width: 100%; height: 100%;
+      background: var(--bg);
+      overflow-y: auto;
+      overflow-x: hidden;
+      font-size: 13px;
+      scrollbar-width: none;
+    }
+    .app::-webkit-scrollbar { display: none; }
+
+    /* navbar */
+    .navbar {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.55rem 1rem;
+      position: sticky; top: 0; z-index: 50;
+    }
+    .logo { font-size: 1.1rem; font-weight: 800; color: var(--primary); letter-spacing: 2px; }
+    .nav-links { display: flex; gap: 0.4rem; }
+    .nav-btn {
+      background: var(--bg3);
+      border: none;
+      border-radius: 5px;
+      color: var(--text);
+      padding: 0.3rem 0.6rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .nav-btn.ghost { background: transparent; border: 1px solid var(--border); }
+
+    /* container */
+    .cont { padding: 1rem; max-width: 100%; }
+    .page-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 1rem; }
+
+    /* form card */
+    .form-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .field-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+      display: block;
+    }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+
+    .fake-input {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.65rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      width: 100%;
+    }
+
+    /* buzzer grid */
+    .buzzer-grid { display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.25rem; }
+    .bz {
+      width: 36px; height: 36px;
+      border-radius: 6px;
+      border: 2px solid var(--border);
+      background: var(--bg3);
+      color: var(--text);
+      font-size: 0.75rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bz.used { opacity: 0.3; }
+    .bz.selected { border-color: var(--green); background: #1b4332; color: var(--green-light); }
+
+    /* pizza grid */
+    .pizza-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; margin-top: 0.25rem; }
+    .pizza-grid.wide { grid-template-columns: repeat(3, 1fr); }
+    .pizza-card {
+      background: var(--bg3);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.5rem;
+      display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+    }
+    .pizza-card.active { border-color: var(--primary); background: #2a1a0a; }
+    .pizza-name { font-size: 0.72rem; font-weight: 600; text-align: center; }
+    .counter-row { display: flex; align-items: center; gap: 0.35rem; }
+    .cbtn {
+      width: 26px; height: 26px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 1rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cval { font-size: 0.9rem; font-weight: 700; min-width: 1rem; text-align: center; color: var(--muted); }
+    .pizza-card.active .cval { color: var(--primary); }
+
+    /* section label */
+    .section-label {
+      font-size: 0.7rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .05em;
+      color: var(--muted); margin-bottom: 0.35rem; display: block;
+    }
+
+    /* textarea */
+    .fake-textarea {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.5rem 0.65rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      width: 100%;
+      height: 44px;
+    }
+
+    /* submit btn */
+    .btn-send {
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      width: 100%;
+      padding: 0.7rem;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-align: center;
+      margin-top: 0.5rem;
+    }
+    .btn-send.fixed {
+      position: sticky;
+      bottom: 0.75rem;
+      left: 0;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+    .btn-send.sent { background: #1b4332; }
+
+    /* ── Kitchen ──────────────────────── */
+    .orders-grid { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+    .orders-grid.wide { grid-template-columns: 1fr 1fr; }
+    .orders-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+
+    .order-card {
+      background: var(--bg3);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      padding: 0.75rem;
+    }
+    .order-card.orange { border-color: var(--orange); }
+    .order-card.red    { border-color: var(--red); background: #2a1a1a; }
+
+    .card-head { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem; }
+    .onum { font-weight: 800; font-size: 0.95rem; color: var(--primary); }
+    .otime { font-size: 0.65rem; color: var(--muted); flex: 1; }
+    .oelapsed {
+      font-size: 0.65rem; font-weight: 700;
+      background: var(--bg); padding: 0.1rem 0.35rem; border-radius: 10px;
+    }
+    .orange .oelapsed { color: var(--orange); }
+    .red    .oelapsed { color: var(--red); }
+    .oclient { font-size: 0.9rem; font-weight: 700; margin-bottom: 0.2rem; }
+    .obuzzer { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.3rem; }
+    .oitems { font-size: 0.78rem; line-height: 1.6; }
+    .oitems span::before { content: '• '; color: var(--primary); }
+    .oitems span.tapa::before { content: '◦ '; color: var(--orange); }
+    .ocomment { font-size: 0.7rem; color: var(--orange); font-style: italic; margin-top: 0.35rem; padding-top: 0.35rem; border-top: 1px solid var(--border); }
+    .reprint {
+      margin-top: 0.5rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--muted);
+      font-size: 0.65rem;
+      padding: 0.25rem 0.5rem;
+      width: 100%;
+      text-align: center;
+    }
+
+    .count-badge {
+      background: var(--primary);
+      color: #fff;
+      border-radius: 20px;
+      padding: 0.1rem 0.5rem;
+      font-size: 0.7rem; font-weight: 700;
+    }
+    .kitchen-head { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+
+    /* ── Stats ────────────────────────── */
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+    }
+    .stat-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; flex-wrap: wrap; gap: 0.4rem; }
+    .stat-date { font-size: 0.9rem; font-weight: 700; }
+    .badges { display: flex; gap: 0.4rem; }
+    .badge {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 20px; padding: 0.15rem 0.55rem;
+      font-size: 0.65rem; font-weight: 700; color: var(--muted);
+    }
+    .badge.green { background: #1b4332; border-color: var(--green); color: var(--green-light); }
+    .stat-row {
+      display: flex; justify-content: space-between;
+      padding: 0.25rem 0.4rem; font-size: 0.78rem; border-radius: 4px;
+    }
+    .stat-row:nth-child(odd) { background: var(--bg3); }
+    .stat-qty { font-weight: 700; color: var(--primary); }
+
+    /* ── Tablet layout (2-col form) ────── */
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .two-col > .form-card { margin-bottom: 0; }
+
+    /* divider */
+    .divider { height: 1px; background: var(--border); margin: 1rem 0; }
+    .mb { margin-bottom: 0.75rem; }
+
+    /* success banner */
+    .success-banner {
+      background: #1b4332;
+      color: var(--green-light);
+      border-radius: var(--radius);
+      padding: 0.6rem 0.85rem;
+      margin-bottom: 0.75rem;
+      font-weight: 600;
+      font-size: 0.82rem;
+    }
+  </style>
+</head>
+<body>
+<h1>Mockups PIZZIA</h1>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     SMARTPHONE
+═══════════════════════════════════════════════════════════════ -->
+<p class="section-title">Smartphone — 3 écrans principaux</p>
+
+<div class="devices-row">
+
+  <!-- PHONE 1 : Nouvelle commande -->
+  <div class="device-wrap">
+    <div class="phone-frame">
+      <div class="app">
+        <div class="navbar">
+          <span class="logo">PIZZIA</span>
+          <div class="nav-links">
+            <button class="nav-btn">Cuisine</button>
+            <button class="nav-btn">Stats</button>
+            <button class="nav-btn ghost">←</button>
+          </div>
+        </div>
+        <div class="cont">
+          <div class="page-title">Nouvelle commande</div>
+          <div class="form-card">
+            <div class="field-row">
+              <div>
+                <span class="field-label">Nom client</span>
+                <div class="fake-input">Martin</div>
+              </div>
+              <div><!-- vide, bipeur ci-dessous --></div>
+            </div>
+            <span class="field-label">Numéro de bipeur</span>
+            <div class="buzzer-grid">
+              <div class="bz used">1</div><div class="bz used">2</div>
+              <div class="bz selected">3</div>
+              <div class="bz">4</div><div class="bz">5</div><div class="bz used">6</div>
+              <div class="bz">7</div><div class="bz">8</div><div class="bz">9</div>
+              <div class="bz">10</div><div class="bz">11</div><div class="bz">12</div>
+              <div class="bz">13</div><div class="bz">14</div><div class="bz">15</div>
+              <div class="bz">16</div><div class="bz">17</div><div class="bz">18</div>
+              <div class="bz">19</div><div class="bz">20</div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <span class="section-label">🍕 Pizzas</span>
+            <div class="pizza-grid mb">
+              <div class="pizza-card active">
+                <span class="pizza-name">Margherita</span>
+                <div class="counter-row">
+                  <div class="cbtn">−</div>
+                  <span class="cval" style="color:var(--primary)">2</span>
+                  <div class="cbtn">+</div>
+                </div>
+              </div>
+              <div class="pizza-card">
+                <span class="pizza-name">Regina</span>
+                <div class="counter-row">
+                  <div class="cbtn">−</div>
+                  <span class="cval">0</span>
+                  <div class="cbtn">+</div>
+                </div>
+              </div>
+              <div class="pizza-card">
+                <span class="pizza-name">4 Fromages</span>
+                <div class="counter-row">
+                  <div class="cbtn">−</div>
+                  <span class="cval">0</span>
+                  <div class="cbtn">+</div>
+                </div>
+              </div>
+              <div class="pizza-card active">
+                <span class="pizza-name">Napolitaine</span>
+                <div class="counter-row">
+                  <div class="cbtn">−</div>
+                  <span class="cval" style="color:var(--primary)">1</span>
+                  <div class="cbtn">+</div>
+                </div>
+              </div>
+            </div>
+            <span class="section-label">🫙 Tapas</span>
+            <div class="pizza-grid">
+              <div class="pizza-card">
+                <span class="pizza-name">Bruschetta</span>
+                <div class="counter-row">
+                  <div class="cbtn">−</div>
+                  <span class="cval">0</span>
+                  <div class="cbtn">+</div>
+                </div>
+              </div>
+              <div class="pizza-card">
+                <span class="pizza-name">Antipasto</span>
+                <div class="counter-row">
+                  <div class="cbtn">−</div>
+                  <span class="cval">0</span>
+                  <div class="cbtn">+</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-card">
+            <span class="field-label">Commentaire</span>
+            <div class="fake-textarea" style="color:var(--muted);font-size:.75rem;padding-top:.4rem">Sans oignon…</div>
+          </div>
+
+          <div class="btn-send fixed">Envoyer la commande</div>
+        </div>
+      </div>
+    </div>
+    <span class="device-label">Commande</span>
+  </div>
+
+  <!-- PHONE 2 : Cuisine -->
+  <div class="device-wrap">
+    <div class="phone-frame">
+      <div class="app">
+        <div class="navbar">
+          <span class="logo">PIZZIA</span>
+          <div class="nav-links">
+            <button class="nav-btn">Commandes</button>
+            <button class="nav-btn">Stats</button>
+            <button class="nav-btn ghost">←</button>
+          </div>
+        </div>
+        <div class="cont">
+          <div class="kitchen-head">
+            <div class="page-title" style="margin:0">Cuisine</div>
+            <span class="count-badge">4 commandes</span>
+          </div>
+          <div class="orders-grid">
+            <div class="order-card">
+              <div class="card-head">
+                <span class="onum">#12</span>
+                <span class="otime">14:32</span>
+                <span class="oelapsed" style="color:var(--muted)">3 min</span>
+              </div>
+              <div class="oclient">Martin</div>
+              <div class="obuzzer">Bipeur <strong>3</strong></div>
+              <div class="oitems">
+                <span>Margherita</span><br>
+                <span>Margherita</span><br>
+                <span>Napolitaine</span>
+              </div>
+              <div class="reprint">Réimprimer</div>
+            </div>
+            <div class="order-card orange">
+              <div class="card-head">
+                <span class="onum">#11</span>
+                <span class="otime">14:19</span>
+                <span class="oelapsed">13 min</span>
+              </div>
+              <div class="oclient">Sophie</div>
+              <div class="oitems">
+                <span>Regina</span><br>
+                <span class="tapa">Bruschetta</span>
+              </div>
+              <div class="reprint">Réimprimer</div>
+            </div>
+            <div class="order-card red">
+              <div class="card-head">
+                <span class="onum">#10</span>
+                <span class="otime">14:05</span>
+                <span class="oelapsed">27 min</span>
+              </div>
+              <div class="oclient">Bipeur 7</div>
+              <div class="oitems">
+                <span>4 Fromages</span><br>
+                <span>4 Fromages</span>
+              </div>
+              <div class="ocomment">Note : extra fromage</div>
+              <div class="reprint">Réimprimer</div>
+            </div>
+            <div class="order-card">
+              <div class="card-head">
+                <span class="onum">#13</span>
+                <span class="otime">14:35</span>
+                <span class="oelapsed" style="color:var(--muted)">1 min</span>
+              </div>
+              <div class="oclient">Dupont</div>
+              <div class="oitems">
+                <span>Napolitaine</span>
+              </div>
+              <div class="reprint">Réimprimer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="device-label">Cuisine</span>
+  </div>
+
+  <!-- PHONE 3 : Stats -->
+  <div class="device-wrap">
+    <div class="phone-frame">
+      <div class="app">
+        <div class="navbar">
+          <span class="logo">PIZZIA</span>
+          <div class="nav-links">
+            <button class="nav-btn">Commandes</button>
+            <button class="nav-btn">Cuisine</button>
+            <button class="nav-btn ghost">←</button>
+          </div>
+        </div>
+        <div class="cont">
+          <div class="page-title">Stats par service</div>
+
+          <div class="stat-card">
+            <div class="stat-head">
+              <span class="stat-date">08/06/2026</span>
+              <div class="badges">
+                <span class="badge">13 commandes</span>
+                <span class="badge green">38 unités</span>
+              </div>
+            </div>
+            <div class="stat-row"><span>Margherita</span><span class="stat-qty">12</span></div>
+            <div class="stat-row"><span>4 Fromages</span><span class="stat-qty">9</span></div>
+            <div class="stat-row"><span>Regina</span><span class="stat-qty">7</span></div>
+            <div class="stat-row"><span>Napolitaine</span><span class="stat-qty">6</span></div>
+            <div class="stat-row"><span>Bruschetta</span><span class="stat-qty">4</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-head">
+              <span class="stat-date">07/06/2026</span>
+              <div class="badges">
+                <span class="badge">9 commandes</span>
+                <span class="badge green">24 unités</span>
+              </div>
+            </div>
+            <div class="stat-row"><span>Margherita</span><span class="stat-qty">8</span></div>
+            <div class="stat-row"><span>Regina</span><span class="stat-qty">7</span></div>
+            <div class="stat-row"><span>4 Fromages</span><span class="stat-qty">5</span></div>
+            <div class="stat-row"><span>Antipasto</span><span class="stat-qty">4</span></div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-head">
+              <span class="stat-date">06/06/2026</span>
+              <div class="badges">
+                <span class="badge">6 commandes</span>
+                <span class="badge green">15 unités</span>
+              </div>
+            </div>
+            <div class="stat-row"><span>Regina</span><span class="stat-qty">6</span></div>
+            <div class="stat-row"><span>Margherita</span><span class="stat-qty">5</span></div>
+            <div class="stat-row"><span>Bruschetta</span><span class="stat-qty">4</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="device-label">Statistiques</span>
+  </div>
+
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TABLETTE HORIZONTALE
+═══════════════════════════════════════════════════════════════ -->
+<p class="section-title" style="margin-top:4rem">Tablette (format horizontal) — 3 écrans</p>
+
+<div class="devices-row" style="flex-direction:column;align-items:center">
+
+  <!-- TABLET 1 : Nouvelle commande -->
+  <div class="device-wrap" style="width:100%;max-width:800px">
+    <div class="tablet-frame" style="width:100%">
+      <div class="app">
+        <div class="navbar">
+          <span class="logo">PIZZIA</span>
+          <div class="nav-links">
+            <button class="nav-btn">Cuisine</button>
+            <button class="nav-btn">Stats</button>
+            <button class="nav-btn ghost">Déconnexion</button>
+          </div>
+        </div>
+        <div class="cont">
+          <div class="page-title">Nouvelle commande</div>
+          <!-- 2 colonnes : identité + bipeur | articles -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+            <!-- Colonne gauche -->
+            <div>
+              <div class="form-card mb">
+                <span class="field-label">Nom du client</span>
+                <div class="fake-input mb">Martin</div>
+                <span class="field-label">Numéro de bipeur</span>
+                <div class="buzzer-grid">
+                  <div class="bz used">1</div><div class="bz used">2</div>
+                  <div class="bz selected">3</div>
+                  <div class="bz">4</div><div class="bz">5</div><div class="bz used">6</div>
+                  <div class="bz">7</div><div class="bz">8</div><div class="bz">9</div>
+                  <div class="bz">10</div><div class="bz">11</div><div class="bz">12</div>
+                  <div class="bz">13</div><div class="bz">14</div><div class="bz">15</div>
+                  <div class="bz">16</div><div class="bz">17</div><div class="bz">18</div>
+                  <div class="bz">19</div><div class="bz">20</div><div class="bz">21</div>
+                  <div class="bz">22</div><div class="bz">23</div><div class="bz">24</div>
+                  <div class="bz">25</div><div class="bz">26</div><div class="bz">27</div>
+                  <div class="bz">28</div><div class="bz">29</div><div class="bz">30</div>
+                </div>
+              </div>
+              <div class="form-card">
+                <span class="field-label">Commentaire</span>
+                <div class="fake-textarea">Sans oignon sur la Regina…</div>
+              </div>
+              <div class="btn-send" style="margin-top:.75rem">Envoyer la commande</div>
+            </div>
+            <!-- Colonne droite -->
+            <div>
+              <div class="form-card">
+                <span class="section-label">🍕 Pizzas</span>
+                <div class="pizza-grid wide mb">
+                  <div class="pizza-card active">
+                    <span class="pizza-name">Margherita</span>
+                    <div class="counter-row"><div class="cbtn">−</div><span class="cval" style="color:var(--primary)">2</span><div class="cbtn">+</div></div>
+                  </div>
+                  <div class="pizza-card">
+                    <span class="pizza-name">Regina</span>
+                    <div class="counter-row"><div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div></div>
+                  </div>
+                  <div class="pizza-card">
+                    <span class="pizza-name">4 Fromages</span>
+                    <div class="counter-row"><div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div></div>
+                  </div>
+                  <div class="pizza-card active">
+                    <span class="pizza-name">Napolitaine</span>
+                    <div class="counter-row"><div class="cbtn">−</div><span class="cval" style="color:var(--primary)">1</span><div class="cbtn">+</div></div>
+                  </div>
+                  <div class="pizza-card">
+                    <span class="pizza-name">Calzone</span>
+                    <div class="counter-row"><div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div></div>
+                  </div>
+                  <div class="pizza-card">
+                    <span class="pizza-name">Prosciutto</span>
+                    <div class="counter-row"><div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div></div>
+                  </div>
+                </div>
+                <span class="section-label">🫙 Tapas</span>
+                <div class="pizza-grid wide">
+                  <div class="pizza-card">
+                    <span class="pizza-name">Bruschetta</span>
+                    <div class="counter-row"><div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div></div>
+                  </div>
+                  <div class="pizza-card">
+                    <span class="pizza-name">Antipasto</span>
+                    <div class="counter-row"><div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div></div>
+                  </div>
+                  <div class="pizza-card">
+                    <span class="pizza-name">Crostini</span>
+                    <div class="counter-row"><div class="cbtn">−</div><span class="cval">0</span><div class="cbtn">+</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="device-label">Commande — tablette horizontale</span>
+  </div>
+
+  <!-- TABLET 2 : Cuisine -->
+  <div class="device-wrap" style="width:100%;max-width:800px;margin-top:2rem">
+    <div class="tablet-frame" style="width:100%">
+      <div class="app">
+        <div class="navbar">
+          <span class="logo">PIZZIA</span>
+          <div class="nav-links">
+            <button class="nav-btn">Commandes</button>
+            <button class="nav-btn">Stats</button>
+            <button class="nav-btn ghost">Déconnexion</button>
+          </div>
+        </div>
+        <div class="cont">
+          <div class="kitchen-head">
+            <div class="page-title" style="margin:0">Cuisine</div>
+            <span class="count-badge">4 commandes</span>
+          </div>
+          <div class="orders-grid three">
+            <div class="order-card">
+              <div class="card-head">
+                <span class="onum">#12</span>
+                <span class="otime">14:32</span>
+                <span class="oelapsed" style="color:var(--muted)">3 min</span>
+              </div>
+              <div class="oclient">Martin</div>
+              <div class="obuzzer">Bipeur <strong>3</strong></div>
+              <div class="oitems">
+                <span>Margherita</span><br>
+                <span>Margherita</span><br>
+                <span>Napolitaine</span>
+              </div>
+              <div class="reprint">Réimprimer</div>
+            </div>
+            <div class="order-card orange">
+              <div class="card-head">
+                <span class="onum">#11</span>
+                <span class="otime">14:19</span>
+                <span class="oelapsed">13 min</span>
+              </div>
+              <div class="oclient">Sophie</div>
+              <div class="oitems">
+                <span>Regina</span><br>
+                <span class="tapa">Bruschetta</span>
+              </div>
+              <div class="reprint">Réimprimer</div>
+            </div>
+            <div class="order-card red">
+              <div class="card-head">
+                <span class="onum">#10</span>
+                <span class="otime">14:05</span>
+                <span class="oelapsed">27 min</span>
+              </div>
+              <div class="oclient">Bipeur 7</div>
+              <div class="oitems">
+                <span>4 Fromages</span><br>
+                <span>4 Fromages</span>
+              </div>
+              <div class="ocomment">Note : extra fromage</div>
+              <div class="reprint">Réimprimer</div>
+            </div>
+            <div class="order-card" style="grid-column:1/2">
+              <div class="card-head">
+                <span class="onum">#13</span>
+                <span class="otime">14:35</span>
+                <span class="oelapsed" style="color:var(--muted)">1 min</span>
+              </div>
+              <div class="oclient">Dupont</div>
+              <div class="oitems">
+                <span>Napolitaine</span>
+              </div>
+              <div class="reprint">Réimprimer</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="device-label">Cuisine — tablette horizontale</span>
+  </div>
+
+  <!-- TABLET 3 : Stats -->
+  <div class="device-wrap" style="width:100%;max-width:800px;margin-top:2rem">
+    <div class="tablet-frame" style="width:100%">
+      <div class="app">
+        <div class="navbar">
+          <span class="logo">PIZZIA</span>
+          <div class="nav-links">
+            <button class="nav-btn">Commandes</button>
+            <button class="nav-btn">Cuisine</button>
+            <button class="nav-btn ghost">Déconnexion</button>
+          </div>
+        </div>
+        <div class="cont">
+          <div class="page-title">Statistiques par service</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem">
+            <div class="stat-card">
+              <div class="stat-head" style="flex-direction:column;align-items:flex-start">
+                <span class="stat-date">08/06/2026</span>
+                <div class="badges" style="margin-top:.35rem">
+                  <span class="badge">13 cmds</span>
+                  <span class="badge green">38 unités</span>
+                </div>
+              </div>
+              <div class="stat-row"><span>Margherita</span><span class="stat-qty">12</span></div>
+              <div class="stat-row"><span>4 Fromages</span><span class="stat-qty">9</span></div>
+              <div class="stat-row"><span>Regina</span><span class="stat-qty">7</span></div>
+              <div class="stat-row"><span>Napolitaine</span><span class="stat-qty">6</span></div>
+              <div class="stat-row"><span>Bruschetta</span><span class="stat-qty">4</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-head" style="flex-direction:column;align-items:flex-start">
+                <span class="stat-date">07/06/2026</span>
+                <div class="badges" style="margin-top:.35rem">
+                  <span class="badge">9 cmds</span>
+                  <span class="badge green">24 unités</span>
+                </div>
+              </div>
+              <div class="stat-row"><span>Margherita</span><span class="stat-qty">8</span></div>
+              <div class="stat-row"><span>Regina</span><span class="stat-qty">7</span></div>
+              <div class="stat-row"><span>4 Fromages</span><span class="stat-qty">5</span></div>
+              <div class="stat-row"><span>Antipasto</span><span class="stat-qty">4</span></div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-head" style="flex-direction:column;align-items:flex-start">
+                <span class="stat-date">06/06/2026</span>
+                <div class="badges" style="margin-top:.35rem">
+                  <span class="badge">6 cmds</span>
+                  <span class="badge green">15 unités</span>
+                </div>
+              </div>
+              <div class="stat-row"><span>Regina</span><span class="stat-qty">6</span></div>
+              <div class="stat-row"><span>Margherita</span><span class="stat-qty">5</span></div>
+              <div class="stat-row"><span>Bruschetta</span><span class="stat-qty">4</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="device-label">Statistiques — tablette horizontale</span>
+  </div>
+
+</div>
+
+</body>
+</html>
