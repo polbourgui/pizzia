@@ -187,7 +187,13 @@ async function printOrder(order) {
         printer.feed(4);
         printer.cut();
 
-        await new Promise((res, rej) => printer.close((e) => e ? rej(e) : res()));
+        await new Promise((res, rej) => {
+          const t = setTimeout(() => res(), 4000);
+          printer.close((e) => {
+            clearTimeout(t);
+            e ? rej(e) : res();
+          });
+        });
 
         resolve();
       } catch (e) {
