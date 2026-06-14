@@ -187,12 +187,15 @@ async function printOrder(order) {
         printer.feed(4);
         printer.cut();
 
-        await new Promise((res, rej) => {
+        // Le ticket est sorti — on ferme le device en best-effort
+        await new Promise((res) => {
           const t = setTimeout(() => res(), 4000);
-          printer.close((e) => {
+          try {
+            printer.close(() => { clearTimeout(t); res(); });
+          } catch {
             clearTimeout(t);
-            e ? rej(e) : res();
-          });
+            res();
+          }
         });
 
         resolve();
